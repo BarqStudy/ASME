@@ -1,1 +1,21 @@
-# ASME
+# ASME — Najran University
+
+Arabic RTL engineering club website with an interactive Three.js mechanical assembly, responsive project filters, event dialogs, and a local-only membership interest form.
+
+## Development
+
+Requires Node.js 22+ and npm.
+
+```sh
+npm ci
+npm run dev -- --port 5173
+```
+
+## Production build
+
+```sh
+npm run build
+npm run preview
+```
+
+Projects, statistics, and events are illustrative design content, pending club approval. Membership interest is stored only in browser localStorage; no data is transmitted to the club. No backend or credentials are required. The Arabic font uses Google Fonts, with local system font fallbacks. All 3D geometry is generated locally.
