@@ -49,7 +49,7 @@ npm run test:browser
 npm run build
 ```
 
-Tests use temporary isolated databases; no production credentials are included. The final verification result is recorded below after completion.
+Tests use temporary isolated databases; no production credentials are included. Verified before the environment interruption: 7 unit tests, 14 isolated PostgreSQL/HTTP integration scenarios, and 8 Chromium scenarios passed. The independent legacy application also passed its 21 tests. Source lint and TypeScript checks passed, and an earlier production build and Docker image build succeeded. The later release image/build verification was interrupted by loss of the execution environment, so those final deployment checks remain pending.
 
 <a id="remaining"></a>
 ## Remaining scope and operational limits
