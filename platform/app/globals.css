@@ -123,6 +123,11 @@ h4 {
   line-height: 1.5;
   letter-spacing: -0.035em;
 }
+/* Thmanyah's own swash alternates extend Arabic letters without distorting glyphs. */
+html[lang="ar"] :is(h1, h2, h3, h4) {
+  font-feature-settings: "ss01" 1;
+  letter-spacing: normal;
+}
 html[lang="en"] h1,
 html[lang="en"] h2 {
   line-height: 1.12;
@@ -357,6 +362,14 @@ small,
   padding-top: 78px;
   padding-bottom: 82px;
   min-height: 660px;
+}
+html[lang="ar"] .hero-copy {
+  container-type: inline-size;
+  min-width: 0;
+}
+/* Size the extended title to its actual column, including narrow mobile screens. */
+html[lang="ar"] .hero h1 {
+  font-size: clamp(1.75rem, 10.5cqi, 4.3rem);
 }
 .hero-label {
   display: flex;
