@@ -31,9 +31,6 @@ jobs:
       - name: Respect the configured Pages deployment path
         id: pages
         uses: actions/github-script@v8
-        env:
-          # Recovery of the exact stale lock reported by both Pages publishers.
-          PAGES_RECOVERY_DEPLOYMENT: 5f23eb26d05b90ffcf46e352cba1ad151a260628
         with:
           script: |
             const { owner, repo } = context.repo;
@@ -45,7 +42,7 @@ jobs:
             core.setOutput('use_workflow', pages.build_type === 'workflow');
             core.setOutput('page_url', pages.html_url);
             core.info(`Using the existing Pages build type: ${pages.build_type}`);
-            const recovery = context.payload.inputs?.stalled_deployment || process.env.PAGES_RECOVERY_DEPLOYMENT;
+            const recovery = context.payload.inputs?.stalled_deployment;
             if (recovery) {
               if (!/^[a-f0-9]{40}$/.test(recovery) || recovery === context.sha) {
                 throw new Error('Recovery must name a superseded Pages revision.');
