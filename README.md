@@ -21,7 +21,7 @@ npm run build
 npm run preview
 ```
 
-The six PostgreSQL tests use PGlite to exercise real SQL and row-level permissions with stand-in Supabase auth/storage schemas: public/private access, publishing and revision conflicts, invalid documents, application validation/deduplication, event registration, image-upload permissions, and administrator revocation. They do not establish readiness of a real Supabase project. Browser validation covers Arabic/English switching and persistence, WebGL controls, project filters, dialogs, content/project/event editing, draft preview isolation, mobile navigation, and overflow. Service-contract browser tests use mocked HTTP responses, not a connected production backend.
+The PostgreSQL tests use PGlite to exercise real SQL and row-level permissions with stand-in Supabase auth/storage schemas: public/private access, publishing and revision conflicts, invalid documents, application validation/deduplication, event registration, image-upload permissions, and administrator revocation. They do not establish readiness of a real Supabase project. Additional tests validate the six mechanisms across drive/explode states and reject metadata or malformed font uploads (15 tests total). Browser validation covers Arabic/English switching and persistence, WebGL controls, project filters, dialogs, content/project/event editing, draft preview isolation, mobile navigation, and overflow. Service-contract browser tests use mocked HTTP responses, not a connected production backend.
 
 Three.js and the administration module load separately. Rendering stops while the scene is offscreen or the page is hidden, caps pixel ratio and frame rate, honors reduced-motion preferences, provides pause/reset controls, and disposes rendering resources on navigation.
 
@@ -36,3 +36,13 @@ See [backend/SETUP.md](backend/SETUP.md) for the exact setup and [backend/schema
 `npm run build` creates `dist/` for GitHub Actions and refreshes root `index.html`, `assets/`, `brand/`, `config.json`, and `.nojekyll` for branch-based Pages. Commit these generated publication files with source changes. Both publication modes serve bundled assets, preventing the previous blank-page conflict. Retain previously published hashed assets for cached HTML.
 
 Projects and events marked “Illustrative concept” are sample content, not official announcements. Administration can replace/hide those entries. No member counts are invented. Event dates use Saudi Arabia time (UTC+03:00). The interface fonts use Google Fonts with system fallbacks; no external 3D assets are required.
+
+## Interactive mechanical laboratory
+
+Six independent 3D learning mechanisms are available under `#lab`: gear train, slider–crank, turbine, differential, gimbal, and robotic arm. Drag horizontally to drive a mechanism, switch to Inspect to orbit its camera, use the angle slider or keyboard arrows, enable exploded/wireframe views, expand a card, and reset. Each mechanism can pause independently; a global control pauses all. These are illustrative kinematic models, not engineering simulation solvers.
+
+A shared WebGL renderer uses scissored viewports for all six cards, loads when approaching the lab, renders only visible cards, pauses while the page is hidden, caps device pixel ratio, and honors reduced-motion preferences. Touch drags operate the models while vertical page scrolling remains available. Geometry, materials, listeners, and WebGL contexts are disposed when leaving or switching languages.
+
+## Requested Thmanyah typography
+
+The user selected Thmanyah for **both Arabic and English**. The attached `._thmanyahserifdisplay-*.otf` files are 221-byte macOS AppleDouble metadata, not usable fonts. The actual font remains pending; the site explicitly retains its existing fonts until valid originals are supplied. See `app/public/fonts/README.md` for the exact four filenames. `npm run build` validates original OpenType files and generates local font CSS automatically. It never renames an unrelated font as Thmanyah.

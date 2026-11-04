@@ -4,9 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "vite build && node scripts/sync-pages.mjs",
+    "build": "node scripts/prepare-fonts.mjs && vite build && node scripts/sync-pages.mjs",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "node --test --test-reporter=tap tests/backend.test.mjs"
+    "test": "node --test --test-reporter=tap tests/*.test.mjs"
   },
   "dependencies": {
     "lucide": "^0.468.0",

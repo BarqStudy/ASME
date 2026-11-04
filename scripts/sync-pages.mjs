@@ -7,4 +7,5 @@ await cp('dist/assets', 'assets', { recursive: true });
 await cp('dist/index.html', 'index.html');
 await cp('dist/brand', 'brand', { recursive: true });
 await cp('dist/config.json', 'config.json');
+await cp('dist/fonts', 'fonts', { recursive: true });
 await writeFile('.nojekyll', '');
