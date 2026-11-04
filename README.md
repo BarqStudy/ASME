@@ -1,48 +1,43 @@
 # ASME — Najran University
 
-An Arabic/English RTL/LTR club platform using the supplied ASME Najran student-section logo and ASME blue. Includes a locally generated interactive Three.js assembly, responsive projects and events, and a bilingual content-management dashboard.
+Arabic/English club platform presented as one continuous engineering space. A single full-viewport 3D scene contains six free-moving mechanical objects around the club identity. There are no homepage sections, laboratory cards, or separate model galleries. Club information, projects, and events open on demand in accessible dialogs; the administration route remains `#/admin`.
 
-## Development
+## Development and checks
 
 Requires Node.js 22+ and npm. Use the existing checkout; do not create a worktree unless requested.
 
 ```sh
 npm ci
 npm run dev -- --port 5173
-```
-
-The app is mounted at `/ASME/`. Source code lives in `app/src/`. Public files live in `app/public/`. The default logo is a transparent PNG cutout; the original supplied JPG is retained as a source reference. Legacy default JPG settings resolve to the transparent logo too.
-
-## Validation and production
-
-```sh
 npm test
 npm run build
 npm run preview
 ```
 
-The PostgreSQL tests use PGlite to exercise real SQL and row-level permissions with stand-in Supabase auth/storage schemas: public/private access, publishing and revision conflicts, invalid documents, application validation/deduplication, event registration, image-upload permissions, and administrator revocation. They do not establish readiness of a real Supabase project. Additional tests validate the six mechanisms across drive/explode states and reject metadata or malformed font uploads (15 tests total). Browser validation covers Arabic/English switching and persistence, WebGL controls, project filters, dialogs, content/project/event editing, draft preview isolation, mobile navigation, and overflow. Service-contract browser tests use mocked HTTP responses, not a connected production backend.
+Use `/ASME/`. Source files are in `app/src/`; public files are in `app/public/`. `studio-layout.js`, `studio-renderer.js`, `studio-state.js` and `studio.css` implement the continuous interface. The previous section-based public interface has been removed. Historical `#lab` links open the same space; `#about`, `#projects`, and `#events` open the corresponding content dialogs.
 
-Three.js and the administration module load separately. Rendering stops while the scene is offscreen or the page is hidden, caps pixel ratio and frame rate, honors reduced-motion preferences, provides pause/reset controls, and disposes rendering resources on navigation.
+## Direct manipulation
+
+Drag any visible mechanism to reposition it. Select a piece directly or from the bottom dock to open its controls. Choose Move, Drive or Inspect; drive with a drag/angle slider, rotate the piece in Inspect, toggle wireframe/exploded view, and reset. The dock can pause all motion. Keyboard users can select a piece from the dock and use arrows to move it, Shift + arrows to drive it, Home to reset, and Space to pause/play. These are illustrative kinematic models, not engineering solvers.
+
+All six mechanisms share one viewport and one WebGL context. Rendering pauses while the page is hidden or a content dialog is open, caps pixel ratio/frame rate for mobile, honors reduced-motion preferences, and disposes listeners, geometry, materials, and the WebGL context when changing language or entering administration. Mobile and desktop have separate starting placements; manually moved objects stay within reachable bounds. WebGL failure leaves the site content controls available.
+
+There are 17 automated tests covering PostgreSQL permissions/applications/publishing, mechanical geometry and movement/reset, placement boundaries, and invalid font handling. Browser checks exercise the actual single-canvas interface, mouse/touch dragging, keyboard operation, object controls, bilingual layout, content dialogs, and local administration. Service contract tests use mocked HTTP responses and do not establish readiness of a real backend.
 
 ## Dashboard and shared service
 
-Open `https://barqstudy.github.io/ASME/#/admin` (or `#/admin` on your local instance). It supports bilingual site copy, announcements, projects, events, images, branding/contact settings, JSON backups/import, and local draft previews. With Supabase connected, authorized administrators can publish shared changes, review membership/event applications, change their statuses, search, and export CSV. Registration and shared administration remain disabled until the service is configured; no default login is supplied. Without a connection, an explicitly labelled local editor is available. Drafts are stored on that device; they never publish automatically.
+Open `https://barqstudy.github.io/ASME/#/admin`. It manages bilingual site copy, announcements, projects, events, images, branding/contact settings, and JSON backups/import. Without a connected service, an explicitly labelled local editor and draft preview are available. Saving a draft never publishes it automatically.
 
-See [backend/SETUP.md](backend/SETUP.md) for the exact setup and [backend/schema.sql](backend/schema.sql) for the database and security policies. Only a public project URL and publishable/anon key belong in `app/public/config.json`. Never commit passwords, service-role keys, or other secrets. Admin login tokens stay in memory. The dashboard lists the latest 1,000 applications. Account creation and administrator allowlisting are performed in the Supabase project dashboard/SQL editor.
+Shared publishing, protected administrator login, membership/event applications, status review, search, and CSV export require Supabase. Follow [backend/SETUP.md](backend/SETUP.md) and [backend/schema.sql](backend/schema.sql). Only public project URL and publishable/anon key belong in `app/public/config.json`. Never commit passwords or service-role keys. Tokens remain in memory. The dashboard lists the latest 1,000 applications. Admin account creation/allowlisting happens through the Supabase project dashboard/SQL editor.
 
-## GitHub Pages
+## Typography and branding
 
-`npm run build` creates `dist/` for GitHub Actions and refreshes root `index.html`, `assets/`, `brand/`, `config.json`, and `.nojekyll` for branch-based Pages. Commit these generated publication files with source changes. Both publication modes serve bundled assets, preventing the previous blank-page conflict. Retain previously published hashed assets for cached HTML.
+Thmanyah is requested for **both Arabic and English**, but remains pending valid original font files. The uploaded `._thmanyahserifdisplay-*.otf` files are 221-byte AppleDouble metadata, not fonts. See `app/public/fonts/README.md`. The build validates actual OTF files, generates local font CSS, and retains named fallback fonts while originals are absent. It never presents a substitute as Thmanyah.
 
-Projects and events marked “Illustrative concept” are sample content, not official announcements. Administration can replace/hide those entries. No member counts are invented. Event dates use Saudi Arabia time (UTC+03:00). The interface fonts use Google Fonts with system fallbacks; no external 3D assets are required.
+The supplied ASME logo is a transparent PNG, with the original JPG retained as reference. Legacy default JPG settings resolve to the transparent image. The new public interface uses the blue logo on a light surface; dark administration uses a white treatment.
 
-## Interactive mechanical laboratory
+## Publication
 
-Six independent 3D learning mechanisms are available under `#lab`: gear train, slider–crank, turbine, differential, gimbal, and robotic arm. Drag horizontally to drive a mechanism, switch to Inspect to orbit its camera, use the angle slider or keyboard arrows, enable exploded/wireframe views, expand a card, and reset. Each mechanism can pause independently; a global control pauses all. These are illustrative kinematic models, not engineering simulation solvers.
+`npm run build` prepares fonts, creates `dist/` for GitHub Actions, and syncs root `index.html`, `assets/`, `brand/`, `fonts/`, `config.json`, and `.nojekyll` for branch-based Pages. Commit the generated publication files together with the source. Both supported publication modes serve bundled output. Retain previously published hashed assets for cached HTML.
 
-A shared WebGL renderer uses scissored viewports for all six cards, loads when approaching the lab, renders only visible cards, pauses while the page is hidden, caps device pixel ratio, and honors reduced-motion preferences. Touch drags operate the models while vertical page scrolling remains available. Geometry, materials, listeners, and WebGL contexts are disposed when leaving or switching languages.
-
-## Requested Thmanyah typography
-
-The user selected Thmanyah for **both Arabic and English**. The attached `._thmanyahserifdisplay-*.otf` files are 221-byte macOS AppleDouble metadata, not usable fonts. The actual font remains pending; the site explicitly retains its existing fonts until valid originals are supplied. See `app/public/fonts/README.md` for the exact four filenames. `npm run build` validates original OpenType files and generates local font CSS automatically. It never renames an unrelated font as Thmanyah.
+Illustrative projects and events remain labelled as sample content, not official club announcements. No membership counts are invented. Event times use Saudi Arabia time (UTC+03:00).

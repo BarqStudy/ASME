@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export const mechanismTypes = ['gears', 'crank', 'turbine', 'differential', 'gimbal', 'robot'];
+export {mechanismTypes} from './mechanism-types.js';
 
 // Visual teaching models: kinematic relationships are illustrative, not engineering solvers.
 export function createMechanism(type) {
@@ -40,7 +40,7 @@ export function createMechanism(type) {
     const a=gear(.84,16,materials.blue),b=gear(1.26,24,materials.metal),c=gear(.63,12,materials.light);
     a.position.set(-1.5,.1,0);b.position.set(.7,.1,0);c.position.set(1.05,2.12,0);
     root.position.y=-.85;
-    const backing=box(4.1,3.5,.14,materials.dark);backing.position.set(.1,.9,-.35);
+    const backing=box(4.1,3.5,.14,materials.dark);backing.position.set(.1,.9,-.35);backing.userData.mount=true;
     update=(phase,spread)=>{a.rotation.z=phase;b.rotation.z=-phase*16/24+Math.PI/24;c.rotation.z=phase*16/12;a.position.z=spread*.6;b.position.z=spread*1.1;c.position.z=spread*.8;};
   } else if(type==='crank') {
     const wheel=gear(.8,22,materials.blue);wheel.position.set(-1.2,0,0);

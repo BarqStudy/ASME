@@ -3,7 +3,7 @@ export const defaults = {
   site: {
     name: { ar: 'نادي ASME — جامعة نجران', en: 'ASME — Najran University' },
     eyebrow: { ar: 'نرسم ملامح المستقبل. بمعايير ASME.', en: 'Engineering tomorrow. The ASME way.' },
-    headline: { ar: 'شغف بالهندسة.\nأثر بلا حدود.', en: 'Driven by engineering.\nDefined by impact.' },
+    headline: { ar: 'الهندسةُ\nتبدأ بحركة.', en: 'Great ideas.\nSet in motion.' },
     intro: { ar: 'مجتمع هندسي في جامعة نجران يحوّل الفضول إلى معرفة، والأفكار إلى تجارب. نتعلّم، نصمّم، ونبتكر معًا.', en: 'A community at Najran University turning curiosity into knowledge and ideas into experiences. We learn, design, and build together.' },
     about: { ar: 'مساحتك لتجربة الهندسة خارج حدود القاعة. نجمع الطلاب حول التعلّم العملي، والعمل الجماعي، وتبادل المعرفة في مجالات الهندسة الميكانيكية.', en: 'Your space to explore engineering beyond the classroom. We bring students together through hands-on learning, teamwork, and sharing knowledge in mechanical engineering.' },
     cta: { ar: 'المستقبل يبدأ بفكرة.\nوفريق يؤمن بها.', en: 'The future starts with an idea.\nAnd a team that believes in it.' },
