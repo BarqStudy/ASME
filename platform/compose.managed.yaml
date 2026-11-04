@@ -1,0 +1,11 @@
+# Use only where the managed runtime provides CODEX_PROXY_CERT.
+services:
+  migrate:
+    build:
+      secrets: [proxy_ca]
+  app:
+    build:
+      secrets: [proxy_ca]
+secrets:
+  proxy_ca:
+    file: ${CODEX_PROXY_CERT:?Managed proxy CA path required}

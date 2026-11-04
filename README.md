@@ -1,5 +1,8 @@
 # ASME — Najran University
 
+> **نسخة Engineering Hub الجديدة:** التطبيق الذي يضم خادم Next.js وPostgreSQL والحسابات ولوحة الإدارة موجود في [platform/README.md](platform/README.md). يحتاج استضافة Node.js، ولا يُنشر عبر GitHub Pages. راجع [حالة التنفيذ والحدود](platform/IMPLEMENTATION.md) قبل الإطلاق.
+
+
 A bilingual student club platform for the College of Engineering, with a mechanical engineering focus. The homepage begins with six directly manipulable mechanical models, followed by animated vision and mission blocks. A fixed bottom menu links the homepage, event articles, projects, and club information. A highlighted Join item appears only while published club registration is open.
 
 ## Development

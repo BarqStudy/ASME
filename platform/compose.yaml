@@ -1,0 +1,46 @@
+services:
+  database:
+    image: postgres:18-bookworm
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-asme}
+      POSTGRES_DB: ${POSTGRES_DB:-asme_nu}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a strong POSTGRES_PASSWORD in .env}
+    volumes:
+      - database:/var/lib/postgresql
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+  migrate:
+    build:
+      context: .
+      target: tools
+    command: [npm, run, db:migrate]
+    env_file: .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL with host database for Compose}
+    depends_on:
+      database:
+        condition: service_healthy
+  app:
+    build:
+      context: .
+      target: runner
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      UPLOAD_DIR: /app/.data/uploads
+      HOSTNAME: 0.0.0.0
+    ports:
+      - '127.0.0.1:3000:3000'
+    volumes:
+      - uploads:/app/.data
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+volumes:
+  database:
+  uploads:
