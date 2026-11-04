@@ -14,7 +14,7 @@ function toast(message,error=false){let el=document.querySelector('#toast');if(!
 function open(html){const modal=document.querySelector('#modal');document.querySelector('#modal-content').innerHTML=html;if(!modal.open)modal.showModal();createIcons({icons});}
 function close(){document.querySelector('#modal')?.close();}
 const lines=value=>e(text(value)).replace(/\n/g,'<br>');
-function logo(){return `<span class="brand-logo ${content.site.logo==='brand/asme-najran.jpg'?'original-logo':''}"><img src="${e(safeURL(content.site.logo,true))}" alt="ASME Najran University Student Section"></span>`;}
+function logo(){return `<span class="brand-logo ${['brand/asme-najran.jpg','brand/asme-najran.png'].includes(content.site.logo)?'original-logo':''}"><img src="${e(safeURL(content.site.logo,true))}" alt="ASME Najran University Student Section"></span>`;}
 const art=category=>category==='energy'?'<div class="solar"><span></span><span></span><span></span><span></span></div><div class="sun"></div>':category==='robotics'?'<div class="robot"><span class="base"></span><span class="arm a"></span><span class="joint j1"></span><span class="arm b"></span><span class="joint j2"></span><span class="claw"></span></div>':'<div class="turbine-object"><div></div></div>';
 async function render(){
  const id=++renderId;cleanup();cleanup=()=>{};close();

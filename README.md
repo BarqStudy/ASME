@@ -11,7 +11,7 @@ npm ci
 npm run dev -- --port 5173
 ```
 
-The app is mounted at `/ASME/`. Source code lives in `app/src/`. Public files and the original unedited logo live in `app/public/`.
+The app is mounted at `/ASME/`. Source code lives in `app/src/`. Public files live in `app/public/`. The default logo is a transparent PNG cutout; the original supplied JPG is retained as a source reference. Legacy default JPG settings resolve to the transparent logo too.
 
 ## Validation and production
 

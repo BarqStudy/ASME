@@ -7,7 +7,7 @@ export const defaults = {
     intro: { ar: 'مجتمع هندسي في جامعة نجران يحوّل الفضول إلى معرفة، والأفكار إلى تجارب. نتعلّم، نصمّم، ونبتكر معًا.', en: 'A community at Najran University turning curiosity into knowledge and ideas into experiences. We learn, design, and build together.' },
     about: { ar: 'مساحتك لتجربة الهندسة خارج حدود القاعة. نجمع الطلاب حول التعلّم العملي، والعمل الجماعي، وتبادل المعرفة في مجالات الهندسة الميكانيكية.', en: 'Your space to explore engineering beyond the classroom. We bring students together through hands-on learning, teamwork, and sharing knowledge in mechanical engineering.' },
     cta: { ar: 'المستقبل يبدأ بفكرة.\nوفريق يؤمن بها.', en: 'The future starts with an idea.\nAnd a team that believes in it.' },
-    email: '', instagram: '', linkedin: '', logo: 'brand/asme-najran.jpg',
+    email: '', instagram: '', linkedin: '', logo: 'brand/asme-najran.png',
     announcement: {ar:'',en:''},
     showExamples: true,
   },
@@ -26,7 +26,7 @@ export const escape = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&a
 export const safeURL = (value, image=false) => {
   if (!value) return '';
   if (image && /^data:image\/(png|jpeg|webp);base64,[a-z\d+/=]+$/i.test(value)) return value;
-  if(image && value==='brand/asme-najran.jpg')return `${import.meta.env.BASE_URL}${value}`;
+  if(image && ['brand/asme-najran.jpg','brand/asme-najran.png'].includes(value))return `${import.meta.env.BASE_URL}brand/asme-najran.png`;
   try {const u=new URL(value);return u.protocol==='https:'?u.href:'';} catch{return '';}
 };
 export function validateContent(data) {
