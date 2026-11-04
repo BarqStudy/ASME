@@ -10,7 +10,7 @@ export async function initialize(){
 }
 async function request(path,{method='GET',body,auth=false,headers={}}={}){
  if(!configured)throw Error('Service not configured');
- const response=await fetch(`${config.supabaseUrl}${path}`,{method,headers:{apikey:config.supabasePublishableKey,...(auth?{Authorization:`Bearer ${session?.access_token??config.supabasePublishableKey}`}:{Authorization:`Bearer ${config.supabasePublishableKey}`}),...(body?{'Content-Type':'application/json'}:{}),...headers},body:body?JSON.stringify(body):undefined});
+ const response=await fetch(`${config.supabaseUrl}${path}`,{method,cache:'no-store',headers:{apikey:config.supabasePublishableKey,...(auth?{Authorization:`Bearer ${session?.access_token??config.supabasePublishableKey}`}:{Authorization:`Bearer ${config.supabasePublishableKey}`}),...(body?{'Content-Type':'application/json'}:{}),...headers},body:body?JSON.stringify(body):undefined});
  if(!response.ok){const error=new Error(`Request failed (${response.status})`);error.status=response.status;throw error;}
  return response.status===204?null:response.json();
 }
@@ -19,6 +19,7 @@ export async function login(email,password){session=await request('/auth/v1/toke
 export async function logout(){try{if(session)await request('/auth/v1/logout',{method:'POST',auth:true});}finally{session=null;}}
 export const isAuthenticated=()=>!!session;
 export async function publishContent(content,expectedRevision=contentRevision){const rows=await request('/rest/v1/rpc/publish_content',{method:'POST',body:{document:validateContent(content),expected_revision:expectedRevision},auth:true});if(rows?.conflict){const e=Error('conflict');e.conflict=true;throw e;}contentRevision=rows.revision;}
+export async function submitMembership(version,answers,consent){await request('/rest/v1/rpc/submit_membership',{method:'POST',body:{form_version:version,submitted_answers:answers,consent}});}
 export async function submitApplication(data){await request('/rest/v1/rpc/submit_application',{method:'POST',body:{applicant_name:data.name,applicant_email:data.email,applicant_interest:data.interest,event_ref:data.eventId||null}});}
 export const listApplications=()=>request('/rest/v1/applications?select=*&order=created_at.desc&limit=1000',{auth:true});
 export const updateApplication=(id,status)=>request(`/rest/v1/applications?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',auth:true,body:{status},headers:{Prefer:'return=minimal'}});

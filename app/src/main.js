@@ -1,11 +1,13 @@
 import './style.css';
 import './studio.css';
-import {studioHTML} from './studio-layout';
-import {createIcons,ArrowUpLeft,ArrowLeft,Box,Users,CalendarDays,ChevronDown,MousePointer2,X,Menu,RotateCcw,Globe,Settings,Play,Pause,Mail,Instagram,Linkedin,ArrowUpRight} from 'lucide';
+import './club.css';
+import {homeHTML,eventsHTML,articleHTML,siteMenu,pageHeader,enhanceClubHome} from './club-pages';
+import {membershipFormHTML,bindMembershipForm} from './membership-form';
+import {createIcons,ArrowUpLeft,ArrowLeft,Box,Users,CalendarDays,ChevronDown,MousePointer2,X,Menu,RotateCcw,Globe,Settings,Play,Pause,Mail,Instagram,Linkedin,ArrowUpRight,Home,Compass,Award,MapPin} from 'lucide';
 import {lang,t,text,setLanguage,dateLabel} from './lib/i18n';
 import {defaults,clone,escape as e,safeURL} from './lib/content';
 import * as api from './lib/api';
-const icons={ArrowUpLeft,ArrowLeft,Box,Users,CalendarDays,ChevronDown,MousePointer2,X,Menu,RotateCcw,Globe,Settings,Play,Pause,Mail,Instagram,Linkedin,ArrowUpRight};
+const icons={ArrowUpLeft,ArrowLeft,Box,Users,CalendarDays,ChevronDown,MousePointer2,X,Menu,RotateCcw,Globe,Settings,Play,Pause,Mail,Instagram,Linkedin,ArrowUpRight,Home,Compass,Award,MapPin};
 const icon=name=>`<i data-lucide="${name}" aria-hidden="true"></i>`;
 const arrow=()=>icon(lang==='ar'?'arrow-up-left':'arrow-up-right');
 let content=clone(defaults),cleanup=()=>{},filter='all',renderId=0,remoteFailed=false;
@@ -19,14 +21,11 @@ function logo(){return `<span class="brand-logo ${['brand/asme-najran.jpg','bran
 const available=key=>content[key].filter(p=>p.published&&(content.site.showExamples||!p.example));
 function bindPanels(){document.querySelectorAll('[data-panel]').forEach(button=>button.onclick=()=>{document.querySelector('#main-nav')?.classList.remove('open');document.querySelector('.mobile-menu')?.setAttribute('aria-expanded','false');showPanel(button.dataset.panel);});}
 function showPanel(panel){
- if(panel==='about'){open(`<div class="eyebrow">ASME / NAJRAN UNIVERSITY</div><h2>${e(text(content.site.name))}</h2><p>${e(text(content.site.about))}</p><div class="studio-panel-callout">${e(text(content.site.cta)).replace(/\n/g,'<br>')}</div><button class="primary" id="panel-join">${t('join')} ${arrow()}</button>`);document.querySelector('#panel-join').onclick=()=>applicationForm();}
+ if(panel==='events'){location.hash='/events';return;}
+ if(panel==='about'){location.hash='vision';return;}
  if(panel==='projects'){
   const projects=available('projects');open(`<div class="eyebrow">ASME / ${t('ourWork')}</div><h2>${t('projects')}</h2><div class="studio-filters">${['all','mechanical','energy','robotics'].map(k=>`<button data-filter="${k}" aria-pressed="${filter===k}">${t(k)}</button>`).join('')}</div><div class="project-dialog-list">${projects.filter(p=>filter==='all'||p.category===filter).map((p,index)=>`<button class="project-dialog-item" data-project="${e(p.id)}">${safeURL(p.cover,true)?`<img src="${e(safeURL(p.cover,true))}" alt="" loading="lazy">`:`<span class="project-symbol">${String(index+1).padStart(2,'0')}</span>`}<span><small>${t(p.category)}${p.example?' · '+t('sample'):''}</small><strong>${e(text(p.title))}</strong><span>${e(text(p.description))}</span></span>${arrow()}</button>`).join('')||`<p class="empty">${t('noProjects')}</p>`}</div>`);
   document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;showPanel('projects');});document.querySelectorAll('[data-project]').forEach(b=>b.onclick=()=>{const p=projects.find(p=>p.id===b.dataset.project);open(`<button class="panel-back" data-panel="projects">← ${t('projects')}</button><div class="eyebrow">ASME / ${t(p.category)}</div><h2>${e(text(p.title))}</h2>${safeURL(p.cover,true)?`<img class="detail-cover" src="${e(safeURL(p.cover,true))}" alt="">`:''}<p>${e(text(p.description))}</p>${p.example?`<p class="sample-note">${t('sampleNote')}</p>`:''}`);});
- }
- if(panel==='events'){
-  const events=available('events');open(`<div class="eyebrow">ASME / ${t('experience')}</div><h2>${t('events')}</h2><div class="project-dialog-list">${events.map(ev=>`<button class="project-dialog-item" data-event="${e(ev.id)}"><span class="project-symbol">${icon('calendar-days')}</span><span><small>${e(dateLabel(ev.date))}${ev.example?' · '+t('sample'):''}</small><strong>${e(text(ev.title))}</strong><span>${e(text(ev.location))}</span></span>${arrow()}</button>`).join('')||`<p class="empty">${t('noEvents')}</p>`}</div>`);
-  document.querySelectorAll('[data-event]').forEach(b=>b.onclick=()=>{const ev=events.find(x=>x.id===b.dataset.event);open(`<button class="panel-back" data-panel="events">← ${t('events')}</button><div class="eyebrow">ASME / ${t('events')}</div><h2>${e(text(ev.title))}</h2><p>${e(text(ev.description))}</p><div class="detail-skills"><strong>${t('time')}</strong><p>${e(dateLabel(ev.date))}</p><strong>${t('place')}</strong><p>${e(text(ev.location))}</p></div>${ev.registrationOpen&&!ev.example?`<button class="primary" id="event-register">${t('register')} ${arrow()}</button>`:`<p>${ev.example?t('sampleNote'):t('closed')}</p>`}`);document.querySelector('#event-register')?.addEventListener('click',()=>applicationForm(ev));});
  }
  if(panel==='help')open(`<div class="eyebrow">ASME / ${t('studioName')}</div><h2>${t('studioHelp')}</h2><ol class="studio-help"><li>${t('studioHelpMove')}</li><li>${t('studioHelpDrive')}</li><li>${t('studioHelpInspect')}</li><li>${t('studioKeyboard')}</li></ol><p class="sample-note">${t('studioNote')}</p>`);
 }
@@ -34,19 +33,39 @@ async function render(){
  const id=++renderId;cleanup();const disposers=[];cleanup=()=>disposers.splice(0).forEach(fn=>fn());close();let preview=false;
  if(sessionStorage.getItem('asme-preview')){const {getDraft}=await import('./admin');const draft=getDraft();if(draft){content=draft;preview=true;}}
  if(id!==renderId)return;
- document.title=text(content.site.name);const admin=location.hash.startsWith('#/admin');document.body.classList.toggle('admin-page',admin);document.body.classList.toggle('studio-page',!admin);
+ document.title=text(content.site.name);const admin=location.hash.startsWith('#/admin');document.body.classList.toggle('admin-page',admin);document.body.classList.toggle('studio-page',!admin);document.body.classList.toggle('club-page',!admin);
  app.innerHTML=`<div id="page"></div><dialog id="modal"><button class="close" aria-label="${t('close')}">${icon('x')}</button><div id="modal-content"></div></dialog>`;document.querySelector('.close').onclick=close;document.querySelector('#modal').onclick=event=>{if(event.target.id==='modal')close();};const page=document.querySelector('#page');
  if(admin){page.innerHTML=`<div class="admin-topbar"><a href="#">ASME / ${t('back')}</a><button class="language-switch" id="language">${icon('globe')} ${lang==='ar'?'English':'العربية'}</button></div><div id="admin-root"><p class="loading">${t('loading')}</p></div>`;bindLanguage();const {mountAdmin}=await import('./admin');if(id!==renderId)return;await mountAdmin(page.querySelector('#admin-root'),content,{toast,open,close,render,logo,setContent:value=>content=value});return;}
  const site=content.site;const social=[['instagram','instagram'],['linkedin','linkedin']].filter(([k])=>safeURL(site[k])).map(([k,i])=>`<a href="${e(safeURL(site[k]))}" target="_blank" rel="noopener noreferrer" aria-label="${k}">${icon(i)}</a>`).join('');
- page.innerHTML=studioHTML({site,logo,preview,social});createIcons({icons});bindLanguage();bindPanels();document.querySelectorAll('.join').forEach(b=>b.onclick=()=>applicationForm());
+ if(location.hash==='#events')history.replaceState(null,'',location.pathname+location.search+'#/events');
+ if(location.hash==='#about')history.replaceState(null,'',location.pathname+location.search+'#vision');
+ const route=location.hash.slice(1),isJoin=route==='/join',isEvents=route.startsWith('/events');
+ if(isEvents){
+  if(route.startsWith('/events/')){let articleId='';try{articleId=decodeURIComponent(route.slice(8));}catch{}page.innerHTML=articleHTML({content,logo,preview,id:articleId});}
+  else{const filter=new URLSearchParams(route.split('?')[1]??'').get('type')??'all';page.innerHTML=eventsHTML({content,logo,preview,filter});}
+ }else if(isJoin){
+  page.innerHTML=`${pageHeader(site,logo,preview)}<main class="membership-page"><div id="form-update-notice"></div>${content.registration.open?membershipFormHTML(content.registration,{preview,offline:!api.configured}):`<div class="registration-closed"><span class="closed-orbit" aria-hidden="true">${icon('users')}</span><span class="eyebrow">ASME / ${t('membershipClosed')}</span><h1>${t('membershipClosed')}</h1><p>${t('closedDescription')}</p><a class="studio-primary" href="#/events">${t('allEvents')} ${arrow()}</a></div>`}</main>${siteMenu(content,'join')}`;
+  const form=document.querySelector('#membership-form');if(form){const snapshot=clone(content.registration);bindMembershipForm(form,snapshot,{submit:async(answers,consent)=>{if(preview)return;await api.submitMembership(snapshot.version,answers,consent);},success:()=>{form.outerHTML=`<div class="registration-success" role="status"><span class="success-mark">✓</span><h1>${preview?t('previewSuccess'):t('saved')}</h1><p>${preview?t('formPreviewOnly'):t('thanks')}</p><a class="studio-primary" href="#/events">${t('allEvents')}</a></div>`;window.scrollTo({top:0,behavior:'instant'});}});}
+ }else page.innerHTML=homeHTML({content,logo,preview,social});
+ createIcons({icons});bindLanguage();bindPanels();
  document.querySelector('#exit-preview')?.addEventListener('click',async()=>{sessionStorage.removeItem('asme-preview');content=api.configured?(await api.loadContent()??clone(defaults)):clone(defaults);render();});
- document.querySelector('.mobile-menu').onclick=event=>{const open=document.querySelector('#main-nav').classList.toggle('open');event.currentTarget.setAttribute('aria-expanded',String(open));};
+ document.querySelector('#article-register')?.addEventListener('click',event=>applicationForm(content.events.find(ev=>ev.id===event.currentTarget.dataset.eventId)));
+ document.querySelector('#site-menu a[href="#"]')?.addEventListener('click',()=>window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'}));
  if(remoteFailed)toast(t('remoteError'),true);
- if(['#about','#projects','#events'].includes(location.hash))showPanel(location.hash.slice(1));
+ if(isEvents||isJoin)return;
+ disposers.push(enhanceClubHome());
+ if(location.hash==='#vision')requestAnimationFrame(()=>document.querySelector('#vision')?.scrollIntoView({behavior:'instant'}));
+ if(location.hash==='#projects')showPanel('projects');
  try{const {mountStudio}=await import('./studio-renderer');if(id!==renderId)return;disposers.push(mountStudio(document.querySelector('#mechanical-world')));}catch{if(id===renderId)document.querySelector('.world-loading').textContent=t('labUnavailable');}
 }
 function bindLanguage(){document.querySelector('#language').onclick=()=>{setLanguage(lang==='ar'?'en':'ar');document.querySelector('#toast')?.setAttribute('hidden','');render();};}
-function applicationForm(ev){open(`<div class="eyebrow">ASME / ${ev?t('register'):t('join')}</div><h2>${ev?e(text(ev.title)):t('community')}</h2>${!api.configured?`<p>${t('notConnected')}</p>${content.site.email?`<a class="primary" href="mailto:${e(content.site.email)}">${t('contact')}</a>`:''}`:`<form id="application-form"><label>${t('fullName')}<input name="name" minlength="2" maxlength="120" autocomplete="name" required></label><label>${t('email')}<input name="email" type="email" maxlength="254" dir="ltr" autocomplete="email" required></label><label>${t('interest')}<select name="interest">${['mechanical','energy','robotics'].map(k=>`<option value="${k}">${t(k)}</option>`).join('')}</select></label><p class="privacy-note">${t('privacy')}</p><label class="check-label"><input type="checkbox" required>${t('consent')}</label><button class="primary">${t('submit')} ${arrow()}</button><p class="form-message" role="status"></p></form>`}`);document.querySelector('#application-form')?.addEventListener('submit',async event=>{event.preventDefault();const form=event.target;const button=form.querySelector('button');button.disabled=true;button.textContent=t('sending');try{await api.submitApplication({...Object.fromEntries(new FormData(form)),eventId:ev?.id});open(`<span class="success-mark">✓</span><h2>${t('saved')}</h2><p>${t('thanks')}</p>`);}catch{form.querySelector('.form-message').textContent=t('failed');button.disabled=false;button.textContent=t('submit');}});}
-window.addEventListener('hashchange',()=>{if(location.hash.startsWith('#/admin')||document.body.classList.contains('admin-page')){scrollTo(0,0);render();}else if(['#about','#projects','#events'].includes(location.hash))showPanel(location.hash.slice(1));});
+function applicationForm(ev){if(!ev){location.hash='/join';return;}open(`<div class="eyebrow">ASME / ${ev?t('register'):t('join')}</div><h2>${ev?e(text(ev.title)):t('community')}</h2>${!api.configured?`<p>${t('notConnected')}</p>${content.site.email?`<a class="primary" href="mailto:${e(content.site.email)}">${t('contact')}</a>`:''}`:`<form id="application-form"><label>${t('fullName')}<input name="name" minlength="2" maxlength="120" autocomplete="name" required></label><label>${t('email')}<input name="email" type="email" maxlength="254" dir="ltr" autocomplete="email" required></label><label>${t('interest')}<select name="interest">${['mechanical','energy','robotics'].map(k=>`<option value="${k}">${t(k)}</option>`).join('')}</select></label><p class="privacy-note">${t('privacy')}</p><label class="check-label"><input type="checkbox" required>${t('consent')}</label><button class="primary">${t('submit')} ${arrow()}</button><p class="form-message" role="status"></p></form>`}`);document.querySelector('#application-form')?.addEventListener('submit',async event=>{event.preventDefault();const form=event.target;const button=form.querySelector('button');button.disabled=true;button.textContent=t('sending');try{await api.submitApplication({...Object.fromEntries(new FormData(form)),eventId:ev?.id});open(`<span class="success-mark">✓</span><h2>${t('saved')}</h2><p>${t('thanks')}</p>`);}catch{form.querySelector('.form-message').textContent=t('failed');button.disabled=false;button.textContent=t('submit');}});}
+window.addEventListener('hashchange',()=>{if(location.hash==='#vision'&&document.querySelector('#vision')){document.querySelector('#vision').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});return;}window.scrollTo({top:0,behavior:'instant'});render();});
+let refreshing=false;
+async function refreshPublishedContent(){
+ if(refreshing||!api.configured||document.hidden||location.hash.startsWith('#/admin')||sessionStorage.getItem('asme-preview'))return;
+ refreshing=true;try{const next=await api.loadContent();if(!next||JSON.stringify(next)===JSON.stringify(content))return;const form=document.querySelector('#membership-form');content=next;if(form&&next.registration.open){if(form.dataset.formVersion!==next.registration.version){form.querySelector('button[type=submit]').disabled=true;const notice=document.querySelector('#form-update-notice');notice.innerHTML=`<p>${t('formUpdated')}</p><button class="outline-button" id="reload-membership">${t('reloadForm')}</button>`;document.querySelector('#reload-membership').onclick=()=>render();}return;}render();}catch{}finally{refreshing=false;}
+}
+window.setInterval(refreshPublishedContent,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshPublishedContent();});
 render();
 (async()=>{try{await api.initialize();if(recoveryHash&&api.configured)await api.acceptRecovery(recoveryHash);if(api.configured)content=await api.loadContent()??clone(defaults);}catch{remoteFailed=true;}render();})();

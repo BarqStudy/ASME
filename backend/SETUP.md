@@ -32,3 +32,11 @@ The dashboard manages bilingual site copy, announcement, project creation/editin
 Application rows contain private names and email addresses; anonymous reads and non-administrator reads are denied at the database level. Public signup can call only the validating application function. Image uploads accept JPEG/PNG/WebP up to 3 MB. The local demonstration caps images at 700 KB to fit browser draft storage; it receives no member applications. The review list currently shows the latest 1,000 applications. Keep an operational retention policy and regular backups appropriate to the club.
 
 If service calls fail, the site shows a notice and falls back to bundled content. It never reports an application or publish as successful after a failed service response. A missing service binding blocks real multi-device administration, even if local editing tests pass.
+
+## Membership form builder and article update
+
+Run the current `schema.sql` again for an existing project before opening club registration. It adds `answers`, `form_snapshot`, `form_version`, and `consent_at` to existing applications without removing records. Club membership now uses the validated `submit_membership` RPC; the older `submit_application` RPC accepts event registrations only. Closed registration and stale form versions are rejected in the database, even if a client still shows an old form. Registration is closed by default.
+
+Use the Registration & form tab to build bilingual questions, preview, open/close, and publish. See [REGISTRATION.md](REGISTRATION.md) for the Arabic operational guide. Each application retains its question schema and consent timestamp. Answer review and CSV export are available to administrators. Public pages refresh published content every 30 seconds and on returning to the tab. Form schema updates do not silently erase in-progress client answers.
+
+The Content tab edits the club vision and mission. Events support activity/workshop/competition/visit/talk categories, bilingual long-form article bodies and cover images. Re-run the current database tests before deploying schema changes; local/mock checks do not establish a live project connection.

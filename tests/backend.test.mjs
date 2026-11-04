@@ -42,22 +42,41 @@ test('invalid documents and malformed imports are rejected',async()=>{
  const duplicate=structuredClone(defaults);duplicate.projects.push(duplicate.projects[0]);assert.throws(()=>validateContent(duplicate));
  await assert.rejects(as('authenticated',admin,()=>db.query('select public.publish_content($1::jsonb,1)',[JSON.stringify(duplicate)])));
 });
-test('anonymous submission validates, deduplicates and hides private data',async()=>{
- const submit=(name,email,event=null)=>as('anon',null,()=>db.query('select public.submit_application($1,$2,$3,$4)',[name,email,'mechanical',event]));
- await assert.rejects(submit('A','bad-email'));
- await submit('Test member','member@example.com');await submit('Test member','MEMBER@example.com');
- const rows=await as('authenticated',admin,()=>db.query('select * from public.applications'));assert.equal(rows.rows.length,1);assert.equal(rows.rows[0].status,'new');
- await assert.rejects(submit('Test member','event@example.com','design-workshop'));
- const document=structuredClone(defaults);document.events[0].example=false;document.events[0].registrationOpen=true;
+test('membership forms enforce open status, required answers, choices, version and privacy',async()=>{
+ const submitEvent=(name,email,event=null)=>as('anon',null,()=>db.query('select public.submit_application($1,$2,$3,$4)',[name,email,'mechanical',event]));
+ const answers={name:'Test member',email:'member@example.com',major:'mechanical',interests:['design','energy']};
+ const submit=(input=answers,version=defaults.registration.version,consent=true)=>as('anon',null,()=>db.query('select public.submit_membership($1,$2::jsonb,$3)',[version,JSON.stringify(input),consent]));
+ await assert.rejects(submit());await assert.rejects(submitEvent('Legacy bypass','legacy@example.com'));
+ const document=structuredClone(defaults);document.registration.open=true;
  await as('authenticated',admin,()=>db.query('select public.publish_content($1::jsonb,1)',[JSON.stringify(document)]));
- await submit('Event member','event@example.com','design-workshop');
- const registrations=await as('authenticated',admin,()=>db.query('select * from public.applications where event_id is not null'));assert.equal(registrations.rows.length,1);
- const id=registrations.rows[0].id;
- await as('authenticated',visitor,()=>db.query("update public.applications set status='accepted' where id=$1",[id]));
- const unchanged=await db.query('select status from public.applications where id=$1',[id]);assert.equal(unchanged.rows[0].status,'new');
- await as('authenticated',admin,()=>db.query("update public.applications set status='accepted' where id=$1",[id]));
- const updated=await db.query('select status from public.applications where id=$1',[id]);assert.equal(updated.rows[0].status,'accepted');
+ await assert.rejects(submit({...answers,name:''}));await assert.rejects(submit({...answers,email:'invalid'}));await assert.rejects(submit({...answers,major:'unknown'}));await assert.rejects(submit({...answers,interests:[]}));await assert.rejects(submit({...answers,interests:['design','design']}));await assert.rejects(submit({...answers,extra:'unknown'}));await assert.rejects(submit(answers,document.registration.version,false));
+ await submit();await submit({...answers,email:'MEMBER@example.com'});
+ const rows=await as('authenticated',admin,()=>db.query('select * from public.applications'));assert.equal(rows.rows.length,1);assert.equal(rows.rows[0].status,'new');assert.deepEqual(rows.rows[0].answers.interests,['design','energy']);assert.equal(rows.rows[0].form_snapshot.fields[0].label.en,'Full name');assert.ok(rows.rows[0].consent_at);
+ await assert.rejects(submitEvent('Test member','event@example.com','design-workshop'));
+ document.events[0].example=false;document.events[0].registrationOpen=true;
+ await as('authenticated',admin,()=>db.query('select public.publish_content($1::jsonb,2)',[JSON.stringify(document)]));
+ await submitEvent('Event member','event@example.com','design-workshop');
+ const registrations=await as('authenticated',admin,()=>db.query('select * from public.applications where event_id is not null'));assert.equal(registrations.rows.length,1);const id=registrations.rows[0].id;
+ await as('authenticated',visitor,()=>db.query("update public.applications set status='accepted' where id=$1",[id]));assert.equal((await db.query('select status from public.applications where id=$1',[id])).rows[0].status,'new');
+ await as('authenticated',admin,()=>db.query("update public.applications set status='accepted' where id=$1",[id]));assert.equal((await db.query('select status from public.applications where id=$1',[id])).rows[0].status,'accepted');
  await assert.rejects(as('authenticated',admin,()=>db.query("update public.applications set email='changed@example.com' where id=$1",[id])));
+ document.registration.open=false;document.registration.fields[0].label.en='Updated question';
+ await as('authenticated',admin,()=>db.query('select public.publish_content($1::jsonb,3)',[JSON.stringify(document)]));
+ await assert.rejects(submit({...answers,email:'closed@example.com'}));await assert.rejects(submitEvent('Bypass','bypass@example.com'));
+ const original=await db.query('select form_snapshot from public.applications where event_id is null');assert.equal(original.rows[0].form_snapshot.fields[0].label.en,'Full name');
+ document.registration.open=true;document.registration.version='updated-v2';
+ await as('authenticated',admin,()=>db.query('select public.publish_content($1::jsonb,4)',[JSON.stringify(document)]));
+ await assert.rejects(submit({...answers,email:'old-form@example.com'}));await submit({...answers,email:'new-form@example.com'},'updated-v2');
+ assert.equal((await db.query('select count(*)::integer count from public.applications where event_id is null')).rows[0].count,2);
+ document.registration.version='typed-v3';
+ for(const [id,type] of [['notes','textarea'],['score','number'],['day','date'],['confirm','checkbox'],['choice','select']])document.registration.fields.push({id,type,purpose:'',required:true,label:{ar:id,en:id},help:{ar:'',en:''},options:type==='select'?[{id:'first',label:{ar:'الأول',en:'First'}},{id:'second',label:{ar:'الثاني',en:'Second'}}]:[]});
+ await as('authenticated',admin,()=>db.query('select public.publish_content($1::jsonb,5)',[JSON.stringify(document)]));
+ const typed={...answers,email:'typed@example.com',notes:'A longer answer',score:'1.5',day:'2026-11-20',confirm:true,choice:'first'};
+ await assert.rejects(submit({...typed,day:'2026-02-30'},'typed-v3'));await assert.rejects(submit({...typed,score:'invalid'},'typed-v3'));await assert.rejects(submit({...typed,confirm:false},'typed-v3'));await submit(typed,'typed-v3');
+ const saved=await db.query("select answers from public.applications where email='typed@example.com'");assert.equal(saved.rows[0].answers.confirm,true);assert.equal(saved.rows[0].answers.score,'1.5');
+ const invalid=structuredClone(document);invalid.registration.fields[2].options.push(invalid.registration.fields[2].options[0]);await assert.rejects(as('authenticated',admin,()=>db.query('select public.publish_content($1::jsonb,6)',[JSON.stringify(invalid)])));
+ const before=(await db.query('select count(*)::integer count from public.applications')).rows[0].count;await db.exec(await readFile(new URL('../backend/schema.sql',import.meta.url),'utf8'));assert.equal((await db.query('select count(*)::integer count from public.applications')).rows[0].count,before,'schema refresh preserves submitted answers');
+
 });
 test('storage bucket limits formats and policy only permits administrator uploads',async()=>{
  const bucket=await db.query("select * from storage.buckets where id='club-media'");assert.equal(bucket.rows[0].file_size_limit,3145728);assert.deepEqual(bucket.rows[0].allowed_mime_types,['image/jpeg','image/png','image/webp']);
