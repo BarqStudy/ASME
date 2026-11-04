@@ -94,3 +94,11 @@ html[lang=en] .mechanism-controls>p{font-size:10px}
 .brand-logo.original-logo img{filter:brightness(0) invert(1);opacity:.96}
 .stage-coordinate{left:21px;right:auto;inset-inline-end:unset}
 html[dir=ltr] .stage-coordinate{left:auto;right:21px}
+@media(pointer:coarse),(max-width:650px){
+ .mechanism-card button,.lab-toolbar button{min-height:44px}
+ .expand-model,.model-buttons button{min-width:44px;min-height:44px}
+ .model-bottom .check-label{min-height:44px;font-size:12px}
+ .drive-control input{height:36px}
+ .mechanism-controls>p{font-size:12px}
+ .model-modes button{min-height:44px}
+}
