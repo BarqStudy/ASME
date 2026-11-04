@@ -13,6 +13,7 @@ import {
   UserRound,
   Settings2,
 } from "lucide-react";
+import { isPages, assetPath, siteBase } from "@/lib/site-mode";
 import { useState } from "react";
 import { useHub } from "./provider";
 export function Shell({ children }: { children: React.ReactNode }) {
@@ -20,7 +21,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
     path = usePathname(),
     [open, setOpen] = useState(false),
     [search, setSearch] = useState("");
-  const join = !!(content.settings.membership as { open?: boolean })?.open;
+  const join =
+    !isPages && !!(content.settings.membership as { open?: boolean })?.open;
   const links = [
     ["/about", "النادي", "The club"],
     ["/events", "الفعاليات", "Events"],
@@ -40,7 +42,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             unoptimized
             width={800}
             height={450}
-            src="/brand/logo.png"
+            src={assetPath("/brand/logo.png")}
             alt="ASME Najran University"
           />
           <span>
@@ -85,13 +87,15 @@ export function Shell({ children }: { children: React.ReactNode }) {
           >
             {dark ? <Sun size={18} /> : <Moon size={18} />}
           </button>
-          <Link
-            className="button compact secondary account-link"
-            href={me ? "/portal" : "/auth/login"}
-          >
-            <UserRound size={16} />
-            {me ? t("حسابي", "My hub") : t("دخول", "Sign in")}
-          </Link>
+          {!isPages && (
+            <Link
+              className="button compact secondary account-link"
+              href={me ? "/portal" : "/auth/login"}
+            >
+              <UserRound size={16} />
+              {me ? t("حسابي", "My hub") : t("دخول", "Sign in")}
+            </Link>
+          )}
           <button
             className="icon-button mobile-menu"
             onClick={() => setOpen((v) => !v)}
@@ -142,7 +146,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 </Link>
               )}
           </div>
-          <form action="/search" className="search-form">
+          <form action={`${siteBase}/search/`} className="search-form">
             <Search size={17} />
             <input
               aria-label={t("البحث في المنصة", "Search the platform")}
@@ -185,8 +189,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <Link href="/projects" className={path === "/projects" ? "active" : ""}>
           {t("المشاريع", "Projects")}
         </Link>
-        <Link href="/portal" className={path === "/portal" ? "active" : ""}>
-          {t("مساحتي", "My hub")}
+        <Link
+          href={isPages ? "/tools" : "/portal"}
+          className={path === (isPages ? "/tools" : "/portal") ? "active" : ""}
+        >
+          {isPages ? t("الأدوات", "Tools") : t("مساحتي", "My hub")}
         </Link>
       </nav>
     </>

@@ -87,3 +87,9 @@ npm start
 `db:generate` يستخدم مخطط WASM المضمّن. يوجّه حلّ مسار المحرك الأصلي غير المستخدم أثناء توليد العميل إلى Node الموجود؛ هذا ليس مسارًا لترحيل البيانات. الترحيل الأصلي الرسمي متاح أيضًا عبر `npm run db:migrate:native` حين يكون مضيف التنزيل مسموحًا. لا تعِد توليد الترحيل الأول بعد تطبيقه. للترحيلات الجديدة استخدم Prisma migrate dev المعتاد في بيئة تسمح بمحركه الأصلي، وراجع SQL ثم اختبره.
 
 راجع [DEPLOYMENT.md](DEPLOYMENT.md) لخيارات Docker وHTTPS وSMTP والنسخ الاحتياطي، و[IMPLEMENTATION.md](IMPLEMENTATION.md) لحالة التنفيذ.
+
+## النشر المؤقت على GitHub Pages
+
+النشر العام الافتراضي الآن يصدر نسخة HTML من التصميم الجديد. من جذر المستودع: `npm run build`، ثم `npm --prefix platform run test:pages`. المحتوى العام في `publication/content.json`، وتفاصيله في README الرئيسي.
+
+`npm run build:pages` داخل هذا المجلد ينتج `.pages-build/out` دون تشغيل الخادم أو قراءة بيانات الطلاب من PostgreSQL. واجهة الحسابات والتسجيل والإدارة المشتركة غير مفعلة في هذا التصدير. يبقى `npm run build` داخل `platform/` مخصصًا للنسخة التي تستخدم خادمًا.

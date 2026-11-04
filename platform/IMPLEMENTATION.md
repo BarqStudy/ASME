@@ -2,7 +2,7 @@
 
 ## Delivered source and behavior
 
-The new application lives in `platform/`. The existing Vite/GitHub Pages application remains an independent working deployment. Next.js 16.4.5, React 19.3.1, TypeScript, Tailwind 4, Motion, Lucide, PostgreSQL 18 and Prisma 7.10.1 are installed with a lockfile. Prisma's matching official WASM schema engine is pinned for this restricted environment.
+The new application lives in `platform/`. The legacy Vite application remains in app/. The default GitHub Pages deployment now exports the new public design as static HTML; server-backed account workflows remain a separate deployment. Next.js 16.4.5, React 19.3.1, TypeScript, Tailwind 4, Motion, Lucide, PostgreSQL 18 and Prisma 7.10.1 are installed with a lockfile. Prisma's matching official WASM schema engine is pinned for this restricted environment.
 
 | Area | Implemented behavior |
 |---|---|
@@ -72,3 +72,7 @@ This is a working vertical slice with the major database workflows implemented. 
 ## Deployment next step
 
 Supply a Node/Docker host with a persistent PostgreSQL database and disk, HTTPS domain and SMTP settings. Apply migrations, seed basic content, bootstrap the administrator, replace sample events with approved content, run the documented checks, and then point the approved public domain to the server. GitHub Pages remains suitable for the independent legacy static application.
+
+## GitHub Pages delivery
+
+The root build now exports the new Next.js public UI with basePath /ASME and a real index.html for every supported route. Static content is explicitly public and checked into publication/content.json; no database export or private records are used. Local search, language/theme persistence, library filters, mechanics and seven tools remain interactive. Account, membership, organizer and contact form endpoints are not simulated. Shared student/admin workflows stay available in the server application for later hosting. Domain purchase is independent of enabling a backend.

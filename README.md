@@ -1,49 +1,48 @@
-# ASME — Najran University
+# ASME NU — Engineering Hub
 
-> **نسخة Engineering Hub الجديدة:** التطبيق الذي يضم خادم Next.js وPostgreSQL والحسابات ولوحة الإدارة موجود في [platform/README.md](platform/README.md). يحتاج استضافة Node.js، ولا يُنشر عبر GitHub Pages. راجع [حالة التنفيذ والحدود](platform/IMPLEMENTATION.md) قبل الإطلاق.
+المنصة العامة لنادي الهندسة الميكانيكية بجامعة نجران، بالعربية والإنجليزية، مع تصميم زجاجي وقطع ميكانيكية تفاعلية ومكتبة وأدوات هندسية.
 
+**الموقع:** https://barqstudy.github.io/ASME/
 
-A bilingual student club platform for the College of Engineering, with a mechanical engineering focus. The homepage begins with six directly manipulable mechanical models, followed by animated vision and mission blocks. A fixed bottom menu links the homepage, event articles, projects, and club information. A highlighted Join item appears only while published club registration is open.
+## التشغيل الحالي: GitHub Pages
 
-## Development
+يستخدم الموقع نسخة HTML ثابتة من تصميم Next.js الجديد، مع ملفات فعلية لكل صفحة ومسار `/ASME/`. تعمل الواجهة والبحث والفلاتر والحاسبات وتبديل اللغة والمظهر دون قاعدة بيانات أو خادم API. الفعاليات التوضيحية موسومة بوضوح، ولا توجد أسماء قيادة أو إحصاءات عضوية مختلقة.
 
-Requires Node.js 22+ and npm. Use the existing checkout; do not create a worktree unless requested.
+الحسابات وطلبات العضوية والحضور والشهادات ولوحة الإدارة المشتركة لا تعمل على GitHub Pages وحده. النسخة الحالية لا تجمع بيانات الطلاب ولا تعرض نماذج دخول أو تسجيل وهمية. يمكن ربط خدمة خلفية لاحقًا، ولا يلزم شراء دومين لتفعيل خدمة خلفية؛ الدومين مستقل عن الاستضافة.
 
-```sh
+## البناء والمعاينة
+
+يتطلب Node.js 24 وnpm 11:
+
+```bash
 npm ci
-npm run dev -- --port 5173
+npm ci --prefix platform
 npm test
 npm run build
-npm run preview
+npm run preview -- --port 4173
 ```
 
-Use `/ASME/`. Source files live in `app/src/`; public assets in `app/public/`. `club-pages.js` and `club.css` provide the home, vision/mission, articles, and navigation. `studio-renderer.js` and `mechanisms.js` provide the single-canvas 3D hero. Rendering pauses offscreen, while hidden, or during dialogs; reduced motion, touch, mouse and keyboard are supported. Vertical touch scrolling remains available over the hero.
+`npm run build` يصدر صفحات عامة من مكونات `platform/components` والمحتوى العام في `platform/publication/content.json`. لا يتصل البناء بقاعدة بيانات. توليد أنواع Prisma يستخدم عنوانًا محليًا وهميًا داخل عملية التوليد فقط.
 
-## Pages
+النتيجة في `dist/` للنشر عبر Actions، وتُزامن أيضًا مع ملفات HTML و`_next/` في جذر المستودع لدعم Pages من الفرع. `.nojekyll` مطلوب لخدمة مجلدات Next. تُحفظ ملفات الإصدارات السابقة لدعم HTML المخزّن مؤقتًا.
 
-- `#`: mechanical hero, club vision/mission and activity pathways.
-- `#vision`: scrolls to the club purpose blocks.
-- `#/events`: student activities, workshops, competitions, visits and talks, shown as articles with category filters.
-- `#/events/<id>`: an article with body, cover, location and event registration when available.
-- `#/join`: dynamic membership form if registration is open, otherwise a closed-state page.
-- `#/admin`: content, articles, form builder, applications, image uploads, contact settings, JSON backup/import and publishing.
+```bash
+npm --prefix platform run lint
+npm --prefix platform run typecheck
+npm --prefix platform test
+npm --prefix platform run test:pages
+```
 
-Illustrative activities are explicitly labelled and are not official club announcements. No invented member counts or event dates are used. Event times use Saudi Arabia time (UTC+03:00).
+اختبار Pages يشغّل خادم ملفات عاديًا ومتصفح Chromium ويتحقق من المسارات المباشرة والبحث والحاسبات والجوال وعدم إرسال طلبات API أو استقبال بيانات خاصة. يتطلب Chromium مثبتًا، أو `npx playwright install --with-deps chromium` داخل `platform/`.
 
-## Registration and forms
+## تعديل المحتوى
 
-The dashboard supports nine question types, required/optional flags, bilingual labels/help/options, ordering, deletion of non-identity questions, and interactive preview. Name and email remain required identity fields. Saving a draft never publishes automatically. Publish the open/closed state to show/hide the highlighted Join menu. Public pages refresh content every 30 seconds and when the tab becomes visible.
+عدّل `platform/publication/content.json` ثم أعد البناء وارفع التغييرات. ملف المحتوى عام تمامًا؛ لا تضع فيه بيانات طلاب أو كلمات مرور أو مفاتيح خاصة. أضف فقط أحداثًا ومشاريع وأسماء اعتمدها النادي. أسماء الصفحات العامة في `platform/publication/routes.ts`، وتولد تفاصيل الفعاليات تلقائيًا من slug كل فعالية.
 
-Real shared registration requires Supabase: follow [backend/SETUP.md](backend/SETUP.md), [backend/schema.sql](backend/schema.sql), and the Arabic [registration guide](backend/REGISTRATION.md). Only a public project URL and publishable/anon key belong in `app/public/config.json`. Never commit passwords or service-role keys. The current instance has no project connection; local previews send and store no applicant answers.
+النشر التلقائي في `.github/workflows/deploy.yml` يبني النسخة الثابتة ويفحصها ثم ينشر `dist/`. ادفع المصدر والملفات العامة المولّدة معًا لدعم إعداد النشر الحالي من الفرع أيضًا.
 
-The database validates active form version, open state, required answers, choice IDs, field types, identity and consent. Each submission stores an immutable question/option snapshot. Administrators can review answers, change status and export CSV. Public/private access is enforced by row-level policies. The old event RPC cannot bypass closed membership registration. Existing projects must re-run the current schema; publication does not apply production SQL. Admin accounts are allowlisted through Supabase, with no default password. Auth tokens remain in memory.
+## النسخة التي تستخدم خادمًا
 
-## Validation
+تطبيق الحسابات والعضوية والإدارة وقاعدة PostgreSQL محفوظ في `platform/`. تشغيله يحتاج خادم Node.js أو Docker وقاعدة بيانات وبريد SMTP، على دومين مخصص أو عنوان مجاني من مزود الاستضافة. راجع [تعليمات التطبيق](platform/README.md) و[النشر](platform/DEPLOYMENT.md) و[حالة التنفيذ](platform/IMPLEMENTATION.md).
 
-21 automated tests cover mechanical geometry/reset, placement boundaries, font validation, content upgrade compatibility, database policies, publication conflicts, dynamic form answers, closed/stale submissions, schema reapplication and private response snapshots. Browser checks exercise form building and preview, conditional registration, actual 30-second menu refresh, answer review/export, form-change preservation, article editing, bilingual pages, real touch manipulation and vertical scrolling. Service-contract browser checks use mocked HTTP responses; they do not prove a live backend connection.
-
-## Fonts and publication
-
-Thmanyah is requested for both languages and remains pending valid original OTF files. The supplied `._thmanyahserifdisplay-*.otf` uploads are 221-byte AppleDouble metadata, not fonts. See `app/public/fonts/README.md`. The build validates fonts and retains explicitly named fallbacks while originals are absent. The ASME mark uses a transparent PNG.
-
-`npm run build` creates `dist/` for Actions and syncs root `index.html`, `assets/`, `brand/`, `fonts/`, `config.json`, and `.nojekyll` for branch-based Pages. Commit source and generated files together; retain previously published hashed assets for cached HTML. Neither GitHub Pages publication nor environment draft saving configures Supabase or runs production database migrations.
+الموقع السابق بـVite محفوظ في `app/`، مع [توثيقه السابق](app/README.md)، ويمكن تطويره عبر `npm run dev` أو بناؤه منفصلًا عبر `npm run build:legacy`. النشر الافتراضي الآن يستخدم التصميم الجديد.

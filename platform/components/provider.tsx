@@ -6,6 +6,7 @@ import {
   useState,
   useCallback,
 } from "react";
+import { isPages } from "@/lib/site-mode";
 import { useModalAccessibility } from "./use-modal";
 import type { Content, Lang, Me, Profile } from "@/lib/types";
 export async function api<T = Record<string, unknown>>(
@@ -13,6 +14,39 @@ export async function api<T = Record<string, unknown>>(
   data?: unknown,
   method = "POST",
 ): Promise<T> {
+  if (isPages) {
+    if (data !== undefined) throw new Error("STATIC_UNAVAILABLE");
+    if (route === "me") return { user: null, profile: null } as T;
+    if (route.split("?")[0] === "content") {
+      const content = (await import("../publication/content.json"))
+        .default as unknown as Content;
+      const q = (
+        new URL(route, "https://asme.invalid").searchParams.get("q") || ""
+      )
+        .trim()
+        .toLowerCase();
+      if (!q) return content as T;
+      const matches = (item: { title: unknown; description: unknown }) =>
+        [
+          translated(item.title, "ar"),
+          translated(item.title, "en"),
+          translated(item.description, "ar"),
+          translated(item.description, "en"),
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(q);
+      return {
+        ...content,
+        events: content.events.filter(matches),
+        resources: content.resources.filter(matches),
+        projects: content.projects.filter(matches),
+        posts: content.posts.filter(matches),
+        competitions: content.competitions.filter(matches),
+      } as T;
+    }
+    throw new Error("STATIC_UNAVAILABLE");
+  }
   const response = await fetch(
     `/api/${route}`,
     data === undefined
@@ -34,6 +68,10 @@ export function translated(value: unknown, lang: Lang) {
   return "";
 }
 const errors: Record<string, [string, string]> = {
+  STATIC_UNAVAILABLE: [
+    "هذه الخدمة لم تُفتح بعد. يمكنك تصفح المحتوى والأدوات الآن.",
+    "This service is not open yet. Explore content and tools for now.",
+  ],
   AUTH_REQUIRED: ["سجّل الدخول أولاً", "Sign in first"],
   VERIFY_EMAIL: ["أكّد بريدك الإلكتروني أولاً", "Verify your email first"],
   FORBIDDEN: ["لا تملك صلاحية هذا الإجراء", "You do not have permission"],

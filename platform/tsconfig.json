@@ -42,6 +42,7 @@
   "exclude": [
     "node_modules",
     ".next-integration",
-    ".next-browser"
+    ".next-browser",
+    ".pages-build"
   ]
 }

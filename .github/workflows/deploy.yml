@@ -24,11 +24,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            platform/package-lock.json
       - run: npm ci
+      - run: npm ci --prefix platform
       - run: npm test
       - run: npm run build
+      - run: npx playwright install --with-deps chromium
+        working-directory: platform
+      - run: npm --prefix platform run test:pages
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -1,0 +1,228 @@
+import assert from "node:assert/strict";
+import { createServer } from "node:http";
+import { readFile, stat, mkdir } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { chromium, type Browser } from "@playwright/test";
+const root = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "../..",
+  ),
+  dist = path.join(root, "dist");
+const mime: Record<string, string> = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "application/javascript",
+  ".css": "text/css",
+  ".txt": "text/plain; charset=utf-8",
+  ".json": "application/json",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".svg": "image/svg+xml",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+  ".ttf": "font/ttf",
+};
+// A plain file server: no Next server, API endpoints, database or SPA fallback.
+const server = createServer(async (req, res) => {
+  try {
+    const pathname = decodeURIComponent(
+      new URL(req.url || "/", "http://local").pathname,
+    );
+    if (!pathname.startsWith("/ASME/")) {
+      res.writeHead(404);
+      res.end();
+      return;
+    }
+    let file = path.resolve(dist, pathname.slice("/ASME/".length));
+    if (file !== dist && !file.startsWith(dist + path.sep)) {
+      res.writeHead(403);
+      res.end();
+      return;
+    }
+    if ((await stat(file)).isDirectory()) file = path.join(file, "index.html");
+    res.writeHead(200, {
+      "Content-Type": mime[path.extname(file)] || "application/octet-stream",
+    });
+    res.end(await readFile(file));
+  } catch {
+    res.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
+    res.end(await readFile(path.join(dist, "404.html")));
+  }
+});
+let browser: Browser | undefined,
+  checks = 0;
+const pass = (name: string) => {
+  checks++;
+  console.log("PASS", name);
+};
+async function main() {
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  assert.ok(address && typeof address === "object");
+  const origin = `http://127.0.0.1:${address.port}`,
+    base = origin + "/ASME";
+  browser = await chromium.launch({
+    executablePath:
+      process.env.CHROMIUM_PATH ||
+      (existsSync("/usr/bin/chromium")
+        ? "/usr/bin/chromium"
+        : chromium.executablePath()),
+    args: ["--no-sandbox", "--disable-dev-shm-usage"],
+  });
+  const page = await browser.newPage({
+      viewport: { width: 1440, height: 1000 },
+      reducedMotion: "reduce",
+    }),
+    errors: string[] = [],
+    badResponses: string[] = [],
+    apiRequests: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  page.on("request", (r) => {
+    if (new URL(r.url()).pathname.includes("/api/")) apiRequests.push(r.url());
+  });
+  page.on("response", (r) => {
+    if (r.url().startsWith(origin) && r.status() >= 400)
+      badResponses.push(`${r.status()} ${r.url()}`);
+  });
+  await page.goto(base + "/", { waitUntil: "networkidle" });
+  await page.getByRole("heading", { level: 1 }).waitFor();
+  assert.ok(
+    (await page.locator("h1").innerText()).includes("الهندسة الميكانيكية"),
+  );
+  assert.ok(
+    await page
+      .locator(".brand img")
+      .evaluate((e: HTMLImageElement) => e.complete && e.naturalWidth > 0),
+  );
+  assert.equal(
+    await page.getByRole("link", { name: "دخول", exact: true }).count(),
+    0,
+  );
+  await page.getByRole("button", { name: "إيقاف الحركة" }).click();
+  await page.getByRole("button", { name: "تشغيل الحركة" }).waitFor();
+  await page.getByRole("button", { name: "إعادة الضبط" }).click();
+  pass("static Arabic homepage, correct logo base path, interactive mechanics");
+  await page
+    .locator(".top-nav")
+    .getByRole("link", { name: "الفعاليات", exact: true })
+    .click();
+  await page.waitForURL("**/ASME/events/");
+  await page.locator(".event-card").first().click();
+  await page.waitForURL("**/ASME/events/cad-introduction/");
+  const detail = await page.reload({ waitUntil: "networkidle" });
+  assert.equal(detail?.status(), 200);
+  await page.getByRole("button", { name: "التسجيل غير مفتوح" }).waitFor();
+  assert.equal(
+    await page.getByRole("button", { name: "التسجيل غير مفتوح" }).isDisabled(),
+    true,
+  );
+  pass(
+    "native navigation and direct event-page refresh, registration clearly unavailable",
+  );
+  await page.getByRole("button", { name: "Switch to English" }).click();
+  await page.waitForFunction(() => document.documentElement.dir === "ltr");
+  await page.getByRole("button", { name: "Toggle theme" }).click();
+  await page.reload({ waitUntil: "networkidle" });
+  await page.waitForFunction(
+    () =>
+      document.documentElement.lang === "en" &&
+      document.documentElement.dataset.theme === "dark",
+  );
+  pass("language and appearance survive a static page refresh");
+  await page.goto(base + "/tools/", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Unit converter" }).click();
+  await page.getByRole("button", { name: "Calculate", exact: true }).click();
+  assert.ok((await page.getByRole("status").innerText()).includes("1,000"));
+  await page.getByRole("button", { name: "Beam deflection" }).click();
+  await page.getByRole("button", { name: "Calculate", exact: true }).click();
+  assert.ok(
+    (await page.getByRole("status").innerText()).includes("0.83333333"),
+  );
+  pass("engineering tools run with no server");
+  await page.goto(base + "/library/", { waitUntil: "networkidle" });
+  assert.equal(await page.locator(".resource-card").count(), 3);
+  assert.equal(
+    await page.getByRole("button", { name: "Save resource" }).count(),
+    0,
+  );
+  await page.getByLabel("Course", { exact: true }).selectOption("cad");
+  assert.equal(await page.locator(".resource-card").count(), 1);
+  await page.getByRole("textbox", { name: "Search the platform" }).fill("ASME");
+  await page
+    .locator(".search-form")
+    .getByRole("button", { name: "Search", exact: true })
+    .click();
+  await page.waitForURL("**/ASME/search/?q=ASME");
+  await page
+    .getByRole("heading", { name: "ASME learning resources" })
+    .waitFor();
+  pass(
+    "library filters and global search work under /ASME without API requests",
+  );
+  for (const route of [
+    "auth/login",
+    "auth/register",
+    "join",
+    "portal",
+    "admin",
+    "projects/submit",
+    "contact",
+  ]) {
+    const r = await page.goto(`${base}/${route}/`, {
+      waitUntil: "networkidle",
+    });
+    assert.equal(r?.status(), 200, route);
+    assert.equal(
+      await page.locator("form:not(.search-form)").count(),
+      0,
+      route,
+    );
+    assert.equal(
+      await page.locator('input[type="password"]').count(),
+      0,
+      route,
+    );
+  }
+  pass("unavailable services never collect account or membership information");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(base + "/", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  await page
+    .locator(".top-nav")
+    .getByRole("link", { name: "Library", exact: true })
+    .click();
+  await page.waitForURL("**/ASME/library/");
+  assert.equal(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
+    false,
+  );
+  await mkdir(path.join(root, "platform/.data"), { recursive: true });
+  await page.screenshot({
+    path: path.join(root, "platform/.data/pages-mobile.png"),
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(base + "/", { waitUntil: "networkidle" });
+  await page.screenshot({
+    path: path.join(root, "platform/.data/pages-desktop.png"),
+    fullPage: true,
+  });
+  pass("mobile navigation and desktop/mobile layout");
+  assert.deepEqual(apiRequests, []);
+  assert.deepEqual(badResponses, []);
+  assert.deepEqual(errors, []);
+  pass("zero backend calls, failed local requests, or browser runtime errors");
+  console.log(`${checks} GitHub Pages browser scenarios passed.`);
+}
+main()
+  .catch((e) => {
+    console.error(e instanceof Error ? e.message : e);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await browser?.close();
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  });

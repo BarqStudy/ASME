@@ -15,8 +15,10 @@
     "test": "tsx --test tests/unit.test.ts",
     "test:integration": "tsx tests/integration.ts",
     "db:migrate:native": "prisma migrate deploy",
-    "format": "prettier --write app components lib scripts tests prisma/seed.ts *.ts *.mjs",
-    "test:browser": "tsx tests/browser.ts"
+    "format": "prettier --write app components lib publication scripts tests prisma/seed.ts *.ts *.mjs",
+    "test:browser": "tsx tests/browser.ts",
+    "build:pages": "node scripts/build-pages.mjs",
+    "test:pages": "tsx tests/pages.ts"
   },
   "dependencies": {
     "@fontsource/cairo": "^5.2.6",

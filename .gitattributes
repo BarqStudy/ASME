@@ -1,0 +1,3 @@
+# Framework-generated chunks may contain intentional whitespace in JS strings.
+_next/** -diff -whitespace linguist-generated=true
+**/__next.*.txt -diff -whitespace linguist-generated=true

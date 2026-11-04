@@ -4,9 +4,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "node scripts/prepare-fonts.mjs && vite build && node scripts/sync-pages.mjs",
+    "build": "node scripts/build-pages.mjs",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "node --test --test-reporter=tap tests/*.test.mjs"
+    "test": "node --test --test-reporter=tap tests/*.test.mjs",
+    "build:pages": "node scripts/build-pages.mjs",
+    "build:legacy": "node scripts/prepare-fonts.mjs && vite build --outDir ../dist-legacy"
   },
   "dependencies": {
     "lucide": "^0.468.0",

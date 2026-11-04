@@ -42,6 +42,8 @@ import {
 const Account = dynamic(() => import("./account").then((m) => m.Account));
 const PortalView = dynamic(() => import("./portal").then((m) => m.PortalView));
 const Admin = dynamic(() => import("./admin").then((m) => m.Admin));
+import { isPages, assetPath } from "@/lib/site-mode";
+import { PagesUnavailable, PagesPrivacy } from "@/publication/unavailable";
 import type { Content } from "@/lib/types";
 export function Reveal({
   children,
@@ -113,7 +115,7 @@ function EventCard({ event }: { event: Content["events"][number] }) {
             unoptimized
             width={800}
             height={450}
-            src={event.coverUrl}
+            src={assetPath(event.coverUrl)}
             alt=""
             loading="lazy"
           />
@@ -475,12 +477,14 @@ function Home() {
           </h2>
           <Link
             className="button primary"
-            href={join ? "/join" : "/auth/register"}
+            href={isPages ? "/projects" : join ? "/join" : "/auth/register"}
           >
-            {t(
-              join ? "قدّم طلب العضوية" : "أنشئ حسابك",
-              join ? "Apply for membership" : "Create your account",
-            )}
+            {isPages
+              ? t("استكشف مساحة المشاريع", "Explore student projects")
+              : t(
+                  join ? "قدّم طلب العضوية" : "أنشئ حسابك",
+                  join ? "Apply for membership" : "Create your account",
+                )}
             <ArrowUpRight size={18} />
           </Link>
           <p className="small muted">
@@ -595,21 +599,30 @@ function Events({ slug }: { slug?: string }) {
             <button
               className="button primary full"
               onClick={register}
-              disabled={busy || new Date(event.deadline) < new Date()}
+              disabled={
+                isPages || busy || new Date(event.deadline) < new Date()
+              }
             >
-              {busy
-                ? t("جارٍ التسجيل…", "Registering…")
-                : event.available
-                  ? t("احجز مقعدك", "Reserve your place")
-                  : event.waitlistEnabled
-                    ? t("انضم لقائمة الانتظار", "Join waiting list")
-                    : t("اكتملت المقاعد", "Fully booked")}
+              {isPages
+                ? t("التسجيل غير مفتوح", "Registration is not open")
+                : busy
+                  ? t("جارٍ التسجيل…", "Registering…")
+                  : event.available
+                    ? t("احجز مقعدك", "Reserve your place")
+                    : event.waitlistEnabled
+                      ? t("انضم لقائمة الانتظار", "Join waiting list")
+                      : t("اكتملت المقاعد", "Fully booked")}
             </button>
             <p className="small muted">
-              {t(
-                "رمز الحضور يظهر في مساحتك بعد تأكيد التسجيل.",
-                "Your attendance QR appears in My hub after confirmation.",
-              )}
+              {isPages
+                ? t(
+                    "سيُعلن رابط التسجيل عند اعتماد الفعالية وفتحها.",
+                    "A registration link will be announced when this event is approved and opened.",
+                  )
+                : t(
+                    "رمز الحضور يظهر في مساحتك بعد تأكيد التسجيل.",
+                    "Your attendance QR appears in My hub after confirmation.",
+                  )}
             </p>
           </aside>
         </div>
@@ -795,26 +808,28 @@ function Library() {
                 )}
                 <ExternalLink size={16} />
               </a>
-              <button
-                className="icon-button"
-                aria-label={t("حفظ المرجع", "Save resource")}
-                onClick={async () => {
-                  if (!me) {
-                    router.push("/auth/login");
-                    return;
-                  }
-                  try {
-                    await api(`resources/${r.id}/save`, { saved: true });
-                    toast(
-                      t("حُفظ المرجع في مساحتك", "Resource saved to My hub"),
-                    );
-                  } catch (e) {
-                    error(e);
-                  }
-                }}
-              >
-                <Bookmark size={18} />
-              </button>
+              {!isPages && (
+                <button
+                  className="icon-button"
+                  aria-label={t("حفظ المرجع", "Save resource")}
+                  onClick={async () => {
+                    if (!me) {
+                      router.push("/auth/login");
+                      return;
+                    }
+                    try {
+                      await api(`resources/${r.id}/save`, { saved: true });
+                      toast(
+                        t("حُفظ المرجع في مساحتك", "Resource saved to My hub"),
+                      );
+                    } catch (e) {
+                      error(e);
+                    }
+                  }}
+                >
+                  <Bookmark size={18} />
+                </button>
+              )}
             </div>
           </div>
         ))}
@@ -844,10 +859,12 @@ function Projects() {
           "Show your project, share your experience, and find a team to build with.",
         )}
       >
-        <Link href="/projects/submit" className="button primary">
-          {t("شارك مشروعك", "Submit your project")}
-          <ArrowUpRight size={18} />
-        </Link>
+        {!isPages && (
+          <Link href="/projects/submit" className="button primary">
+            {t("شارك مشروعك", "Submit your project")}
+            <ArrowUpRight size={18} />
+          </Link>
+        )}
       </Head>
       <div className="filters glass">
         <label className="check">
@@ -878,7 +895,7 @@ function Projects() {
                   unoptimized
                   width={800}
                   height={450}
-                  src={p.coverUrl}
+                  src={assetPath(p.coverUrl)}
                   alt=""
                 />
               ) : (
@@ -919,7 +936,7 @@ function Projects() {
                   <span key={x}>{x}</span>
                 ))}
               </div>
-              {p.needsTeam && (
+              {!isPages && p.needsTeam && (
                 <button
                   className="button secondary full"
                   onClick={() => {
@@ -1096,7 +1113,7 @@ function About() {
                   width={800}
                   height={450}
                   className="avatar"
-                  src={p.image}
+                  src={assetPath(p.image)}
                   alt=""
                 />
               )}
@@ -1165,7 +1182,7 @@ function Posts({ kind }: { kind: "CAREER" | "NEWS" }) {
                 width={800}
                 height={450}
                 className="post-cover"
-                src={p.coverUrl}
+                src={assetPath(p.coverUrl)}
                 alt=""
                 loading="lazy"
               />
@@ -1394,6 +1411,14 @@ function Verify({ code }: { code: string }) {
 }
 export function PublicPage({ path }: { path: string[] }) {
   const { t } = useHub();
+  if (isPages && path[0] === "privacy") return <PagesPrivacy />;
+  if (
+    isPages &&
+    (path[0] === "contact" ||
+      ["auth", "portal", "admin", "join", "u", "verify"].includes(path[0]) ||
+      (path[0] === "projects" && path[1] === "submit"))
+  )
+    return <PagesUnavailable contact={path[0] === "contact"} />;
   if (!path.length) return <Home />;
   if (path[0] === "auth") return <Account mode={path[1] || "login"} />;
   if (path[0] === "portal") return <PortalView />;
