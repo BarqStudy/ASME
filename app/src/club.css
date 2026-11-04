@@ -74,3 +74,4 @@ html[lang=en] .purpose-heading h2{font-size:34px;line-height:1.35}html[lang=en] 
 }
 @media(max-width:360px){.site-menubar>a,.site-menubar>button{min-width:46px;padding-inline:7px;font-size:8px}.site-menubar>a.menu-join{min-width:99px;font-size:10px;padding-inline:9px}html[lang=en] .site-menubar>a.menu-join{min-width:111px;font-size:9px}.club-page .club-hero .studio-shell{height:750px}}
 @media(prefers-reduced-motion:reduce){body.club-page{scroll-behavior:auto}.purpose-orbit{animation:none}.purpose-card.will-reveal{opacity:1;translate:none}.purpose-card{transform:none!important}.article-card:hover{translate:none}.site-menubar>a.menu-join:hover{transform:none}}
+@media(max-width:360px){.site-menubar{gap:0;padding-inline:5px}.site-menubar>a,.site-menubar>button{min-width:40px;padding-inline:5px}.site-menubar>a.menu-join{min-width:100px}html[lang=en] .site-menubar>a.menu-join{min-width:105px}}
