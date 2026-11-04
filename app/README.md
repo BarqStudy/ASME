@@ -44,6 +44,6 @@ The database validates active form version, open state, required answers, choice
 
 ## Fonts and publication
 
-Thmanyah is requested for both languages and remains pending valid original OTF files. The supplied `._thmanyahserifdisplay-*.otf` uploads are 221-byte AppleDouble metadata, not fonts. See `app/public/fonts/README.md`. The build validates fonts and retains explicitly named fallbacks while originals are absent. The ASME mark uses a transparent PNG.
+Thmanyah Serif Display is installed locally for both languages in five weights (300, 400, 500, 700, 900). Valid original OTF files replace the unusable AppleDouble metadata uploads; see `app/public/fonts/README.md` for provenance. The legacy build validates font tables before generating the shared Arabic/English font declarations. The ASME mark uses a transparent PNG.
 
 `npm run build` creates `dist/` for Actions and syncs root `index.html`, `assets/`, `brand/`, `fonts/`, `config.json`, and `.nojekyll` for branch-based Pages. Commit source and generated files together; retain previously published hashed assets for cached HTML. Neither GitHub Pages publication nor environment draft saving configures Supabase or runs production database migrations.

@@ -1,0 +1,18 @@
+{
+  "family": "thmanyah serif display",
+  "source": "https://github.com/khaliddosari/thmanyah-fonts",
+  "revision": "d3e183a945cdd05722a5bf2c8170bacfa3bbb664",
+  "copyright": "Typeface rights remain with Thmanyah. Included as website font assets, without modification or relicensing.",
+  "files": {
+    "thmanyahserifdisplay-Light.woff2": "3db143f2c1fda859c07d68a3cd2f3c669f0229db5a190f9c33d9aecc8cee886a",
+    "thmanyahserifdisplay-Light.otf": "14a2781ab9101f32587e90126115dcbac70e13f980b4a3a508df2b076b6bdcc4",
+    "thmanyahserifdisplay-Regular.woff2": "214a70d9dabcfa18649086841c25ccc67ef6630179837834bcffd3a149131ca6",
+    "thmanyahserifdisplay-Regular.otf": "1f5c735a6c05cce9fe9b2459d5aedb1d039541d50b726304bd617a69587bf112",
+    "thmanyahserifdisplay-Medium.woff2": "e21a2ea53f90d8e57560d34e0f7dd613d0ebd3a6a19a9a2af3e258638f5f6259",
+    "thmanyahserifdisplay-Medium.otf": "5086a7e446fb8a14986aef9c81c01696455c2660eaeda1aa2b8f37696efc0af6",
+    "thmanyahserifdisplay-Bold.woff2": "d36da84ee5423145415425bdd9c10dc27f57a66afec031bd7b78e662572846ce",
+    "thmanyahserifdisplay-Bold.otf": "ac2f056441891276792ab6d828d8ad9169ef44ecea60d6ccf126b25361f0ee9d",
+    "thmanyahserifdisplay-Black.woff2": "a057be61138a74a590b9d4d0dce6f6b2926e1c443577ad30eb1d86f11efa0a0b",
+    "thmanyahserifdisplay-Black.otf": "696b78342a499a82421ae25c1db86b73730108ea38d8be216669c243dfea1557"
+  }
+}

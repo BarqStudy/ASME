@@ -1,13 +1,39 @@
 import type { Metadata } from "next";
-import "@fontsource/cairo/arabic-400.css";
-import "@fontsource/cairo/arabic-600.css";
-import "@fontsource/cairo/arabic-700.css";
-import "@fontsource/cairo/arabic-800.css";
-import "@fontsource/inter/latin-400.css";
-import "@fontsource/inter/latin-500.css";
-import "@fontsource/inter/latin-600.css";
-import "@fontsource/inter/latin-700.css";
+import localFont from "next/font/local";
 import "./globals.css";
+const thmanyah = localFont({
+  src: [
+    {
+      path: "../public/fonts/thmanyahserifdisplay-Light.woff2",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/thmanyahserifdisplay-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/thmanyahserifdisplay-Medium.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/thmanyahserifdisplay-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/thmanyahserifdisplay-Black.woff2",
+      weight: "900",
+      style: "normal",
+    },
+  ],
+  variable: "--font-thmanyah",
+  display: "swap",
+  preload: true,
+});
+
 export const metadata: Metadata = {
   title: { default: "ASME NU — Engineering Hub", template: "%s | ASME NU" },
   description:
@@ -20,7 +46,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html
+      lang="ar"
+      dir="rtl"
+      className={thmanyah.variable}
+      suppressHydrationWarning
+    >
       <body>{children}</body>
     </html>
   );

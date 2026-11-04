@@ -1,12 +1,7 @@
-# Thmanyah font installation
+# Thmanyah Serif Display
 
-The four supplied `._thmanyahserifdisplay-*.otf` uploads are 221-byte AppleDouble metadata files, not font data. They cannot be loaded by a browser. Do not rename them or claim a fallback is Thmanyah.
+The site uses the original Thmanyah Serif Display family for Arabic and English, in Light (300), Regular (400), Medium (500), Bold (700), and Black (900). These are real OpenType fonts, not the unusable AppleDouble `._` metadata companions from the uploads.
 
-Place the actual licensed OpenType files here with these exact names (no `._` prefix):
+The current Next.js platform loads compact WOFF2 files from `platform/public/fonts` through `next/font/local`. The preserved legacy app loads the matching OTF files in this directory; `node scripts/prepare-fonts.mjs` validates the fonts and generates `fonts.css`.
 
-- thmanyahserifdisplay-Light.otf
-- thmanyahserifdisplay-Regular.otf
-- thmanyahserifdisplay-Medium.otf
-- thmanyahserifdisplay-Bold.otf
-
-Run `npm run build`. Font signatures and table bounds are validated before generating fonts.css. Valid faces apply to Arabic AND English, as requested. Source font files are served locally; no font CDN is needed for Thmanyah. Until originals are supplied, the existing IBM Plex Sans Arabic and Inter remain explicit fallbacks.
+Source revision and SHA-256 checksums are recorded in `platform/public/fonts/SOURCE.json`. Typeface rights remain with Thmanyah; these unmodified website assets are not relicensed under the application license.

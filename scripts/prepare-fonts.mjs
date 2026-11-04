@@ -9,7 +9,7 @@ export function validOpenType(bytes){
  return ['name','cmap','head'].every(tag=>tags.has(tag));
 }
 export async function prepareFonts(root='app/public/fonts'){
- await mkdir(root,{recursive:true});const weights={Light:300,Regular:400,Medium:500,Bold:700};const faces=[];
+ await mkdir(root,{recursive:true});const weights={Light:300,Regular:400,Medium:500,Bold:700,Black:900};const faces=[];
  for(const [name,weight] of Object.entries(weights)){const file=`thmanyahserifdisplay-${name}.otf`;let bytes;try{bytes=await readFile(path.join(root,file));}catch(error){if(error.code==='ENOENT')continue;throw error;}if(!validOpenType(bytes))throw Error(`${file} is not a valid font. Use the real OpenType file, not its macOS ._ metadata companion.`);faces.push(`@font-face{font-family:Thmanyah;src:url('./${file}') format('opentype');font-style:normal;font-weight:${weight};font-display:swap;}`);}
  const css=faces.length?`${faces.join('\n')}\n:root:root{--font-ar:Thmanyah;--font-en:Thmanyah}\n`:'/* Thmanyah awaits valid original OTF files. No metadata files or substitute fonts are declared as Thmanyah. */\n';await writeFile(path.join(root,'fonts.css'),css);return faces.length;
 }

@@ -1,5 +1,6 @@
 @import "tailwindcss";
 :root {
+  --font-ui: var(--font-thmanyah), serif;
   --bg: #f5f7fa;
   --surface: rgba(255, 255, 255, 0.7);
   --surface-solid: #fff;
@@ -38,13 +39,10 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-ui);
   font-size: 14px;
   line-height: 1.7;
   overflow-x: hidden;
-}
-html[lang="ar"] body {
-  font-family: "Cairo", sans-serif;
 }
 body:before {
   content: "";
@@ -276,7 +274,7 @@ small,
 .eyebrow {
   font-size: 0.67rem;
   letter-spacing: 0.12em;
-  font-family: "Inter", "Cairo", sans-serif;
+  font-family: var(--font-ui);
   display: inline-flex;
   align-items: center;
   gap: 9px;
@@ -314,9 +312,7 @@ small,
   flex-direction: column;
 }
 .brand strong {
-  font:
-    700 20px "Inter",
-    sans-serif;
+  font: 700 20px var(--font-ui);
   letter-spacing: -1px;
 }
 .brand b {
@@ -436,9 +432,7 @@ html[lang="en"] .hero h1 {
   align-items: center;
   gap: 9px;
   margin: 22px 23px 0;
-  font:
-    500 0.61rem "Inter",
-    sans-serif;
+  font: 500 0.61rem var(--font-ui);
   letter-spacing: 0.12em;
   color: #56758f;
 }
@@ -503,7 +497,7 @@ html[lang="en"] .hero h1 {
 }
 .axis {
   position: absolute;
-  font: 500 0.58rem "Inter";
+  font: 500 0.58rem var(--font-ui);
   color: #7e9ab0;
 }
 .axis-x {
@@ -564,7 +558,7 @@ html[lang="en"] .hero h1 {
   display: flex;
   justify-content: space-between;
   margin: 17px 7px 0;
-  font: 500 0.55rem "Inter";
+  font: 500 0.55rem var(--font-ui);
   letter-spacing: 0.13em;
   color: var(--muted);
 }
@@ -586,7 +580,7 @@ html[lang="en"] .hero h1 {
   overflow: hidden;
   padding: 23px 0;
   border-block: 1px solid var(--line);
-  font: 600 0.7rem "Inter";
+  font: 600 0.7rem var(--font-ui);
   letter-spacing: 0.27em;
   color: var(--muted);
 }
@@ -636,7 +630,7 @@ html[lang="en"] .hero h1 {
   margin-bottom: 29px;
 }
 .card-kicker span {
-  font: 500 0.62rem "Inter";
+  font: 500 0.62rem var(--font-ui);
   color: var(--muted);
 }
 .purpose-card h3 {
@@ -688,7 +682,7 @@ html[lang="en"] .hero h1 {
   position: absolute;
   inset-inline-end: 10px;
   bottom: -80px;
-  font: 200 230px "Inter";
+  font: 200 230px var(--font-ui);
   color: var(--blue);
   opacity: 0.06;
   animation: gearSpin 50s linear infinite;
@@ -745,7 +739,7 @@ html[lang="en"] .hero h1 {
 .art-coordinate {
   position: absolute;
   bottom: 15px;
-  font: 500 0.43rem "Inter";
+  font: 500 0.43rem var(--font-ui);
   letter-spacing: 0.16em;
   color: #5d87a6;
 }
@@ -863,7 +857,7 @@ html[lang="en"] .hero h1 {
     25px 25px 30px #153f691f,
     -6px 0 0 #153d60;
   padding: 45px 20px;
-  font: 600 12px "Inter";
+  font: 600 12px var(--font-ui);
   letter-spacing: 0.12em;
   line-height: 1.5;
   border-radius: 4px 10px 10px 4px;
@@ -900,7 +894,7 @@ html[lang="en"] .hero h1 {
   color: #2879ba;
 }
 .book-card > span {
-  font: 600 0.6rem "Inter";
+  font: 600 0.6rem var(--font-ui);
   letter-spacing: 0.03em;
 }
 .join-banner {
@@ -1064,7 +1058,7 @@ html[lang="en"] .hero h1 {
   color: var(--blue);
 }
 .resource-icon > span {
-  font: 600 0.58rem "Inter";
+  font: 600 0.58rem var(--font-ui);
   padding: 5px 8px;
   background: var(--ice);
   border-radius: 6px;
@@ -1088,7 +1082,7 @@ html[lang="en"] .hero h1 {
   position: absolute;
   bottom: 12px;
   left: 15px;
-  font: 500 0.6rem "Inter";
+  font: 500 0.6rem var(--font-ui);
   background: #ffffff90;
   padding: 3px 9px;
   border-radius: 5px;
@@ -1340,7 +1334,7 @@ details p {
   padding: 40px;
 }
 .formula {
-  font: 500 1.8rem "Inter";
+  font: 500 1.8rem var(--font-ui);
   padding: 27px;
   background: var(--ice);
   border-radius: 14px;
@@ -1361,7 +1355,7 @@ details p {
 }
 .result strong {
   display: block;
-  font: 600 2.3rem "Inter";
+  font: 600 2.3rem var(--font-ui);
   margin-top: 13px;
   color: var(--blue);
 }
@@ -1406,7 +1400,7 @@ details p {
   padding: 27px;
 }
 .stat > strong {
-  font: 600 2.2rem "Inter";
+  font: 600 2.2rem var(--font-ui);
   color: var(--blue);
   letter-spacing: -0.06em;
 }
@@ -1596,7 +1590,7 @@ details p {
 }
 .admin-brand small {
   flex: 1 0 100%;
-  font: 0.55rem "Inter";
+  font: 0.55rem var(--font-ui);
   letter-spacing: 0.14em;
   color: var(--muted);
 }
@@ -1834,7 +1828,7 @@ footer {
   gap: 45px;
 }
 .footer-top > div:first-child > strong {
-  font: 600 1.9rem "Inter";
+  font: 600 1.9rem var(--font-ui);
   letter-spacing: -1px;
 }
 .footer-top > div:first-child > p {
