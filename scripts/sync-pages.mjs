@@ -5,4 +5,6 @@ import { cp, mkdir, writeFile } from 'node:fs/promises';
 await mkdir('assets', { recursive: true });
 await cp('dist/assets', 'assets', { recursive: true });
 await cp('dist/index.html', 'index.html');
+await cp('dist/brand', 'brand', { recursive: true });
+await cp('dist/config.json', 'config.json');
 await writeFile('.nojekyll', '');
