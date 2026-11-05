@@ -239,10 +239,6 @@ function Home() {
         </Reveal>
         <Reveal className="hero-lab">
           <Mechanics />
-          <div className="lab-footnote">
-            <span>DESIGNED TO MOVE</span>
-            <span>ME / NU — 001</span>
-          </div>
         </Reveal>
       </section>
       {Object.values(content.stats).some((n) => n > 0) && (

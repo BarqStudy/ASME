@@ -17,6 +17,12 @@ export function Mechanics() {
       })
       .catch(() => {
         /* The lightweight fallback remains visible without WebGL. */
+      })
+      .finally(() => {
+        if (!disposed) {
+          document.documentElement.dataset.gearReady = "true";
+          window.dispatchEvent(new Event("asme:gear-ready"));
+        }
       });
     return () => {
       disposed = true;
@@ -24,11 +30,7 @@ export function Mechanics() {
     };
   }, []);
   return (
-    <div className="mechanics glass auto-mechanics">
-      <div className="lab-caption">
-        <span className="dot" />
-        ENGINEERED TO MOVE<span>ASME / NU</span>
-      </div>
+    <div className="mechanics auto-mechanics">
       <div
         className="mechanical-stage automatic-stage"
         role="img"
@@ -37,7 +39,6 @@ export function Mechanics() {
           "An automatically rotating three-dimensional gear",
         )}
       >
-        <div className="gear-halo" />
         {!ready && (
           <div className="gear-fallback" aria-hidden="true">
             ⚙
@@ -48,10 +49,6 @@ export function Mechanics() {
           className={ready ? "gear-canvas ready" : "gear-canvas"}
           aria-hidden="true"
         />
-      </div>
-      <div className="gear-signature">
-        <span>PRECISION IN EVERY TURN</span>
-        <span>01 / ∞</span>
       </div>
     </div>
   );

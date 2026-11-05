@@ -89,6 +89,56 @@ async function main() {
     if (r.url().startsWith(origin) && r.status() >= 400)
       badResponses.push(`${r.status()} ${r.url()}`);
   });
+  // Hold the actual application chunks to inspect the HTML before hydration.
+  let releaseChunks!: () => void;
+  let chunksReady = new Promise<void>((resolve) => {
+    releaseChunks = resolve;
+  });
+  await page.route("**/_next/static/chunks/*.js", async (route) => {
+    await chunksReady;
+    await route.continue();
+  });
+  await page.goto(base + "/", { waitUntil: "commit" });
+  await page.locator(".boot-intro").waitFor({ state: "visible" });
+  assert.equal(await page.locator(".boot-skeleton").isVisible(), false);
+  assert.equal(await page.locator("#platform-content").isVisible(), false);
+  releaseChunks();
+  await page.waitForFunction(
+    () => document.documentElement.dataset.boot === "ready",
+  );
+  await page.locator(".gear-canvas.ready").waitFor();
+  assert.equal(
+    await page
+      .locator(".gear-signature, .gear-halo, .hero-lab .lab-footnote")
+      .count(),
+    0,
+  );
+  assert.equal(
+    await page
+      .locator(".auto-mechanics")
+      .evaluate((el) => getComputedStyle(el).backgroundColor),
+    "rgba(0, 0, 0, 0)",
+  );
+  chunksReady = new Promise<void>((resolve) => {
+    releaseChunks = resolve;
+  });
+  await page.reload({ waitUntil: "commit" });
+  await page.locator(".boot-skeleton").waitFor({ state: "visible" });
+  assert.equal(await page.locator(".boot-intro").isVisible(), false);
+  releaseChunks();
+  await page.waitForFunction(
+    () => document.documentElement.dataset.boot === "ready",
+  );
+  await page.unroute("**/_next/static/chunks/*.js");
+  await page
+    .locator(".top-nav")
+    .getByRole("link", { name: "الفعاليات", exact: true })
+    .click();
+  await page.waitForURL("**/ASME/events/");
+  assert.equal(await page.locator(".boot-screen").isVisible(), false);
+  pass(
+    "first visit has a gear intro; refresh has grey placeholders before JavaScript; navigation never replays the loader",
+  );
   await page.goto(base + "/", { waitUntil: "networkidle" });
   await page.getByRole("heading", { level: 1 }).waitFor();
   assert.ok(

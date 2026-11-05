@@ -1,24 +1,26 @@
 1:"$Sreact.fragment"
-2:"/ASME/_next/static/chunks/1ua2kfq9s-me6.js"
-3:I[39756,["$2"],"default"]
-4:"/ASME/_next/static/chunks/3bp2plo7aznbb.js"
-5:I[79365,["$2","$4"],"default"]
-6:I[37457,["$2"],"default"]
-7:"/ASME/_next/static/chunks/3zt_16xndew4w.js"
-8:I[22016,["$2","$7"],""]
-c:I[97367,["$2"],"OutletBoundary"]
-d:"$Sreact.suspense"
-f:"ViewportBoundary"
-10:I[97367,["$2"],"$f"]
-12:"MetadataBoundary"
-13:I[97367,["$2"],"$12"]
-15:I[68027,["$2"],"default",1]
-:HL["/ASME/_next/static/chunks/1ug0hpf85e38g.css","style"]
-a:X
-b:[["children",{"s":"__PAGE__","h":512,"d":{"r":["$","$1","c",{"children":[["$","main",null,{"className":"wrap section","children":[["$","span",null,{"className":"eyebrow","children":"404"}],["$","h1",null,{"children":["هذه الصفحة غير موجودة",["$","br",null,{}],"Page not found"]}],["$","$L8",null,{"className":"button primary","href":"/","children":"الرئيسية · Home"}]]}],[["$","script","script-0",{"src":"/ASME/_next/static/chunks/3zt_16xndew4w.js","async":true,"nonce":"$undefined"}]],["$","$Lc",null,{"children":["$","$d",null,{"name":"Next.MetadataOutlet","children":"$@e"}]}]]}],"p":false,"v":null}}]]
-9:[["children",{"s":"/_not-found","h":512,"d":{"r":["$","$1","c",{"children":[null,["$","$L3",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$a"},"c":"$Qb"}]]
-0:{"P":null,"c":["","_not-found",""],"q":"","i":false,"t":{"t":{"s":"","h":528,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/ASME/_next/static/chunks/1ug0hpf85e38g.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/ASME/_next/static/chunks/1ua2kfq9s-me6.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"ar","dir":"rtl","className":"wZng6q_variable","suppressHydrationWarning":true,"children":["$","body",null,{"children":["$","$L3",null,{"parallelRouterKey":"children","error":"$5","errorStyles":[],"errorScripts":[["$","script","script-0",{"src":"/ASME/_next/static/chunks/3bp2plo7aznbb.js","async":true,"nonce":"$undefined"}]],"template":["$","$L6",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","main",null,{"className":"wrap section","children":[["$","span",null,{"className":"eyebrow","children":"404"}],["$","h1",null,{"children":["هذه الصفحة غير موجودة",["$","br",null,{}],"Page not found"]}],["$","$L8",null,{"className":"button primary","href":"/","children":"الرئيسية · Home"}]]}],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}]}]]}],"p":false,"v":null},"c":"$Q9"},"h":{"r":["$","$1","h",{"children":[["$","meta",null,{"name":"robots","content":"noindex"}],["$","$L10",null,{"children":"$L11"}],["$","$L13",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$d",null,{"name":"Next.Metadata","children":"$L14"}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":false,"v":null}},"m":"$undefined","G":["$15",[["$","link","0",{"rel":"stylesheet","href":"/ASME/_next/static/chunks/1ug0hpf85e38g.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]]],"S":true,"r":"$undefined","s":"$undefined","a":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"2elSs9PgBB6M-q_GEe3bR"}
-a:C
-11:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
-e:null
-14:[["$","title","0",{"children":"ASME NU — Engineering Hub"}],["$","meta","1",{"name":"description","content":"نادي الهندسة الميكانيكية بجامعة نجران — Mechanical Engineering Club at Najran University"}],["$","meta","2",{"name":"robots","content":"index, follow"}]]
+2:"/ASME/_next/static/chunks/05fz8o-o21noq.js"
+3:I[66082,["$2"],"BootScreen"]
+4:I[39756,["$2"],"default"]
+5:"/ASME/_next/static/chunks/3bp2plo7aznbb.js"
+6:I[79365,["$2","$5"],"default"]
+7:I[37457,["$2"],"default"]
+8:"/ASME/_next/static/chunks/3zt_16xndew4w.js"
+9:I[22016,["$2","$8"],""]
+a:I[66082,["$2"],"Experience"]
+e:I[97367,["$2"],"OutletBoundary"]
+f:"$Sreact.suspense"
+11:"ViewportBoundary"
+12:I[97367,["$2"],"$11"]
+14:"MetadataBoundary"
+15:I[97367,["$2"],"$14"]
+17:I[68027,["$2"],"default",1]
+:HL["/ASME/_next/static/chunks/0qjb72l3hjhzq.css","style"]
+c:X
+d:[["children",{"s":"__PAGE__","h":512,"d":{"r":["$","$1","c",{"children":[["$","main",null,{"className":"wrap section","children":[["$","span",null,{"className":"eyebrow","children":"404"}],["$","h1",null,{"children":["هذه الصفحة غير موجودة",["$","br",null,{}],"Page not found"]}],["$","$L9",null,{"className":"button primary","href":"/","children":"الرئيسية · Home"}]]}],[["$","script","script-0",{"src":"/ASME/_next/static/chunks/3zt_16xndew4w.js","async":true,"nonce":"$undefined"}]],["$","$Le",null,{"children":["$","$f",null,{"name":"Next.MetadataOutlet","children":"$@10"}]}]]}],"p":false,"v":null}}]]
+b:[["children",{"s":"/_not-found","h":512,"d":{"r":["$","$1","c",{"children":[null,["$","$L4",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$c"},"c":"$Qd"}]]
+0:{"P":null,"c":["","_not-found",""],"q":"","i":false,"t":{"t":{"s":"","h":528,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/ASME/_next/static/chunks/0qjb72l3hjhzq.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/ASME/_next/static/chunks/05fz8o-o21noq.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"ar","dir":"rtl","className":"wZng6q_variable","suppressHydrationWarning":true,"children":[["$","head",null,{"children":["$","script",null,{"dangerouslySetInnerHTML":{"__html":"(()=>{const d=document.documentElement;let visited=false;try{visited=sessionStorage.getItem('asme:entered')==='1';d.lang=localStorage.getItem('asmenu-lang')==='en'?'en':'ar';d.dir=d.lang==='ar'?'rtl':'ltr';d.dataset.theme=localStorage.getItem('asmenu-theme')==='dark'?'dark':'light'}catch{}const nav=performance.getEntriesByType('navigation')[0];d.dataset.boot=visited||nav?.type==='reload'?'skeleton':'intro';window.setTimeout(()=>{if(d.dataset.boot!=='ready')d.dataset.boot='ready'},10000)})()"}}]}],["$","body",null,{"children":[["$","$L3",null,{}],["$","div",null,{"id":"platform-content","children":["$","$L4",null,{"parallelRouterKey":"children","error":"$6","errorStyles":[],"errorScripts":[["$","script","script-0",{"src":"/ASME/_next/static/chunks/3bp2plo7aznbb.js","async":true,"nonce":"$undefined"}]],"template":["$","$L7",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","main",null,{"className":"wrap section","children":[["$","span",null,{"className":"eyebrow","children":"404"}],["$","h1",null,{"children":["هذه الصفحة غير موجودة",["$","br",null,{}],"Page not found"]}],["$","$L9",null,{"className":"button primary","href":"/","children":"الرئيسية · Home"}]]}],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}],["$","$La",null,{}]]}]]}]]}],"p":false,"v":null},"c":"$Qb"},"h":{"r":["$","$1","h",{"children":[["$","meta",null,{"name":"robots","content":"noindex"}],["$","$L12",null,{"children":"$L13"}],["$","$L15",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$f",null,{"name":"Next.Metadata","children":"$L16"}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":false,"v":null}},"m":"$undefined","G":["$17",[["$","link","0",{"rel":"stylesheet","href":"/ASME/_next/static/chunks/0qjb72l3hjhzq.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]]],"S":true,"r":"$undefined","s":"$undefined","a":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"naxwR9IsZYa-YUFN39REw"}
+c:C
+13:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+10:null
+16:[["$","title","0",{"children":"ASME NU — Engineering Hub"}],["$","meta","1",{"name":"description","content":"نادي الهندسة الميكانيكية بجامعة نجران — Mechanical Engineering Club at Najran University"}],["$","meta","2",{"name":"robots","content":"index, follow"}]]

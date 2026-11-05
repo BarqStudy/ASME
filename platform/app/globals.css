@@ -2935,12 +2935,10 @@ hr {
   font-style: normal;
 }
 .auto-mechanics {
-  background: radial-gradient(
-    ellipse at 50% 45%,
-    #e2eff8 0%,
-    #f7fbfe 62%,
-    #edf5fa 100%
-  );
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 .automatic-stage {
   height: 420px;
@@ -3000,7 +2998,7 @@ hr {
   }
 }
 [data-theme="dark"] .auto-mechanics {
-  background: radial-gradient(ellipse at center, #153950, #0f2639 75%);
+  background: transparent;
 }
 [data-theme="dark"] .gear-halo {
   border-color: #69abcf25;
@@ -3381,4 +3379,296 @@ hr {
 .media-upload summary {
   cursor: pointer;
   color: var(--blue);
+}
+
+/* Shared motion language: quiet entrances, responsive surfaces and clear focus. */
+.reading-progress {
+  position: fixed;
+  inset: 0 0 auto;
+  height: 3px;
+  background: var(--blue);
+  transform: scaleX(var(--page-progress, 0));
+  transform-origin: right;
+  z-index: 150;
+  pointer-events: none;
+}
+html[dir="ltr"] .reading-progress {
+  transform-origin: left;
+}
+.page-arrival {
+  animation: page-arrive 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+[data-reveal="true"][data-seen="true"] {
+  animation: surface-arrive 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.button,
+.icon-button,
+.bottom-nav a,
+.top-nav a,
+.text-button {
+  transition:
+    background 0.25s,
+    color 0.25s,
+    border-color 0.25s,
+    box-shadow 0.25s,
+    transform 0.25s;
+}
+.button:active:not(:disabled),
+.icon-button:active {
+  transform: scale(0.96);
+}
+.button.primary {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.button.primary::after {
+  content: "";
+  position: absolute;
+  inset: -60% auto -60% -70%;
+  width: 35%;
+  background: linear-gradient(90deg, transparent, #ffffff38, transparent);
+  transform: rotate(25deg);
+  pointer-events: none;
+  transition: left 0.65s;
+}
+.button.primary:hover::after {
+  left: 140%;
+}
+.purpose-card,
+.event-card,
+.resource-card,
+.project-card,
+.form-block,
+.stat {
+  transition:
+    border-color 0.3s,
+    box-shadow 0.3s,
+    translate 0.3s;
+}
+@media (hover: hover) {
+  .purpose-card:hover,
+  .event-card:hover,
+  .resource-card:hover,
+  .project-card:hover,
+  .stat:hover {
+    translate: 0 -5px;
+    border-color: color-mix(in srgb, var(--blue) 40%, transparent);
+    box-shadow: 0 22px 45px -28px #2879ba70;
+  }
+  .purpose-card:hover .card-kicker svg {
+    transform: rotate(-12deg) scale(1.1);
+  }
+  .text-button:hover svg,
+  .circle-arrow:hover svg {
+    transform: translate(2px, -2px);
+  }
+}
+.card-kicker svg,
+.text-button svg,
+.circle-arrow svg {
+  transition: transform 0.35s;
+}
+.form-block:focus-within,
+.form-card:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 10%, transparent);
+}
+@keyframes page-arrive {
+  from {
+    opacity: 0.7;
+    translate: 0 10px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes surface-arrive {
+  from {
+    opacity: 0.65;
+    translate: 0 16px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* Present in the exported HTML, before the application chunks are downloaded. */
+.boot-screen {
+  display: none;
+}
+html[data-boot="intro"] .boot-screen,
+html[data-boot="skeleton"] .boot-screen {
+  display: grid;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--blue);
+}
+html[data-boot="intro"] #platform-content,
+html[data-boot="skeleton"] #platform-content {
+  visibility: hidden;
+}
+html[data-boot="intro"],
+html[data-boot="skeleton"] {
+  overflow: hidden;
+}
+.boot-intro,
+.boot-skeleton {
+  display: none;
+}
+html[data-boot="intro"] .boot-intro {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 18px;
+}
+.boot-gear {
+  width: 108px;
+  height: 108px;
+  animation: gearSpin 5s linear infinite;
+}
+.boot-intro strong {
+  font-size: 1.4rem;
+  letter-spacing: 0.1em;
+}
+.boot-intro strong span {
+  color: var(--muted);
+}
+.boot-intro p {
+  color: var(--muted);
+  margin: 0;
+  font-size: 0.85rem;
+}
+html[lang="ar"] .boot-en,
+html[lang="en"] .boot-ar {
+  display: none;
+}
+html[data-boot="skeleton"] .boot-skeleton {
+  display: block;
+  width: min(1200px, calc(100% - 48px));
+  margin-inline: auto;
+}
+.boot-skeleton i,
+.sk-art {
+  display: block;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--muted) 13%, var(--bg));
+  position: relative;
+  overflow: hidden;
+}
+.boot-skeleton i::after,
+.sk-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    color-mix(in srgb, var(--surface-solid) 55%, transparent),
+    transparent 80%
+  );
+  animation: skeleton-sweep 1.8s ease-in-out infinite;
+}
+.skeleton-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100px;
+  gap: 30px;
+  border-bottom: 1px solid var(--line);
+}
+.skeleton-header > i {
+  width: 140px;
+  height: 38px;
+}
+.skeleton-header > div {
+  display: flex;
+  gap: 18px;
+}
+.skeleton-header > div i {
+  width: 70px;
+  height: 16px;
+}
+.skeleton-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 70px;
+  padding: 80px 0;
+}
+.skeleton-hero i {
+  height: 15px;
+  margin-bottom: 16px;
+}
+.skeleton-hero .sk-label {
+  height: 10px;
+  width: 40%;
+  margin-bottom: 35px;
+}
+.skeleton-hero .sk-title {
+  height: 54px;
+  margin-bottom: 18px;
+}
+.skeleton-hero .short {
+  width: 75%;
+}
+.skeleton-hero .sk-button {
+  width: 160px;
+  height: 48px;
+  margin-top: 32px;
+}
+.sk-art {
+  height: 330px;
+  border-radius: 24px;
+}
+.skeleton-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.skeleton-cards i {
+  height: 200px;
+  border-radius: 20px;
+}
+@keyframes skeleton-sweep {
+  from {
+    translate: -100% 0;
+  }
+  to {
+    translate: 100% 0;
+  }
+}
+@media (max-width: 700px) {
+  .skeleton-header > div {
+    display: none;
+  }
+  .skeleton-hero {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 38px 0;
+  }
+  .skeleton-hero .sk-title {
+    height: 38px;
+  }
+  .sk-art {
+    height: 200px;
+  }
+  .skeleton-cards {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-arrival,
+  [data-reveal="true"][data-seen="true"],
+  .boot-gear,
+  .boot-skeleton i::after,
+  .sk-art::after {
+    animation: none;
+  }
 }

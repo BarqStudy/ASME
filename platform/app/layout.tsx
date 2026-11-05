@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { BootScreen, Experience } from "@/components/experience";
+import { bootScript } from "@/lib/boot";
 const thmanyah = localFont({
   src: [
     {
@@ -52,7 +54,14 @@ export default function RootLayout({
       className={thmanyah.variable}
       suppressHydrationWarning
     >
-      <body>{children}</body>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: bootScript }} />
+      </head>
+      <body>
+        <BootScreen />
+        <div id="platform-content">{children}</div>
+        <Experience />
+      </body>
     </html>
   );
 }

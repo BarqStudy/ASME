@@ -106,7 +106,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
       </header>
-      <main id="main">{children}</main>
+      <main id="main">
+        <div className="page-arrival" key={path}>
+          {children}
+        </div>
+      </main>
       <footer>
         <div className="footer-top">
           <div>
