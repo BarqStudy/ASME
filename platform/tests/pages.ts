@@ -315,6 +315,88 @@ async function main() {
     fullPage: true,
   });
   pass("mobile navigation and desktop/mobile layout");
+  // Keep animations enabled: reduced motion used to hide the smooth-scroll bug.
+  const scrollPage = await browser.newPage({
+    viewport: { width: 390, height: 844 },
+    reducedMotion: "no-preference",
+  });
+  await scrollPage.addInitScript(() => {
+    localStorage.setItem("asmenu-lang", "en");
+    window.addEventListener("scroll", () => {
+      const root = document.documentElement;
+      root.dataset.scrollPeak = String(
+        Math.max(Number(root.dataset.scrollPeak || 0), scrollY),
+      );
+    });
+  });
+  await scrollPage.goto(base + "/", { waitUntil: "networkidle" });
+  await scrollPage.waitForFunction(
+    () => document.documentElement.dataset.boot === "ready",
+  );
+  for (const [name, route] of [
+    ["Events", "events/"],
+    ["Home", ""],
+  ]) {
+    await scrollPage.evaluate(() => {
+      document.documentElement.dataset.scrollPeak = "0";
+    });
+    await scrollPage
+      .locator(".bottom-dock")
+      .getByRole("link", { name, exact: true })
+      .click();
+    await scrollPage.waitForURL(base + "/" + route);
+    await scrollPage.waitForTimeout(850);
+    assert.ok(
+      await scrollPage.evaluate(
+        () =>
+          scrollY <= 5 &&
+          Number(document.documentElement.dataset.scrollPeak || 0) <= 5,
+      ),
+      `${name} navigation must never jump towards the footer`,
+    );
+  }
+  await scrollPage.getByRole("button", { name: "Toggle theme" }).click();
+  assert.ok(await scrollPage.evaluate(() => scrollY <= 5));
+  await scrollPage.reload({ waitUntil: "networkidle" });
+  await scrollPage.waitForFunction(
+    () => document.documentElement.dataset.boot === "ready",
+  );
+  await scrollPage.waitForTimeout(850);
+  assert.ok(
+    await scrollPage.evaluate(() => scrollY <= 5),
+    "refresh at the top stays at the top",
+  );
+  await scrollPage.evaluate(() => scrollTo({ top: 900, behavior: "instant" }));
+  await scrollPage.reload({ waitUntil: "networkidle" });
+  await scrollPage.waitForFunction(
+    () => document.documentElement.dataset.boot === "ready",
+  );
+  await scrollPage.waitForTimeout(850);
+  assert.ok(
+    await scrollPage.evaluate(() => Math.abs(scrollY - 900) < 120),
+    "refresh restores the reading position instead of jumping to the footer",
+  );
+  await scrollPage
+    .locator(".bottom-dock")
+    .getByRole("link", { name: "Events", exact: true })
+    .click();
+  await scrollPage.waitForURL(base + "/events/");
+  await scrollPage.waitForTimeout(850);
+  assert.ok(
+    await scrollPage.evaluate(() => scrollY <= 5),
+    "a new destination opens at the top even when leaving a scrolled page",
+  );
+  await scrollPage.goBack({ waitUntil: "networkidle" });
+  await scrollPage.waitForURL(base + "/");
+  await scrollPage.waitForTimeout(850);
+  assert.ok(
+    await scrollPage.evaluate(() => Math.abs(scrollY - 900) < 120),
+    "browser Back preserves the reading position",
+  );
+  await scrollPage.close();
+  pass(
+    "animated navigation, ordinary buttons and refresh keep the correct scroll position",
+  );
   assert.deepEqual(apiRequests, []);
   assert.deepEqual(badResponses, []);
   assert.deepEqual(errors, []);

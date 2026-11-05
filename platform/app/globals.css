@@ -3398,6 +3398,10 @@ html[dir="ltr"] .reading-progress {
 .page-arrival {
   animation: page-arrive 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
+#platform-content {
+  /* Font hydration and entrance effects must not choose a new scroll anchor. */
+  overflow-anchor: none;
+}
 [data-reveal="true"][data-seen="true"] {
   animation: surface-arrive 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
@@ -3477,11 +3481,9 @@ html[dir="ltr"] .reading-progress {
 @keyframes page-arrive {
   from {
     opacity: 0.7;
-    translate: 0 10px;
   }
   to {
     opacity: 1;
-    translate: 0 0;
   }
 }
 @keyframes surface-arrive {

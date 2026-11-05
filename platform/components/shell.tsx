@@ -32,7 +32,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
     ["/tools", "الأدوات", "Tools"],
   ];
   return (
-    <>
+    <div className="site-shell">
       <a href="#main" className="skip">
         {t("تجاوز إلى المحتوى", "Skip to content")}
       </a>
@@ -200,6 +200,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
           {isPages ? t("الأدوات", "Tools") : t("مساحتي", "My hub")}
         </Link>
       </nav>
-    </>
+    </div>
   );
 }
