@@ -1,0 +1,47 @@
+# This Blueprint proposes paid services. Review Render's cost before applying.
+# Native Node keeps migration and administrator tools available in Render Shell.
+services:
+  - type: web
+    name: asme-nu
+    runtime: node
+    plan: starter
+    region: frankfurt
+    rootDir: platform
+    buildCommand: npm ci --include=dev && npm run build:render
+    preDeployCommand: npm run release:render
+    startCommand: npm run start:render
+    healthCheckPath: /api/health
+    disk:
+      name: asme-uploads
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: asme-db
+          property: connectionString
+      - key: UPLOAD_DIR
+        value: /var/data/uploads
+      - key: MAIL_MODE
+        value: smtp
+      - key: TRUST_PROXY
+        value: "false"
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+    buildFilter:
+      paths:
+        - platform/**
+        - render.yaml
+
+databases:
+  - name: asme-db
+    databaseName: asme_nu
+    user: asme
+    plan: basic-256mb
+    diskSizeGB: 5
+    region: frankfurt
+    ipAllowList: []
