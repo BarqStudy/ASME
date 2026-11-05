@@ -126,3 +126,111 @@ test("schemas reject impossible dates and incomplete membership consent", () => 
     false,
   );
 });
+
+// Dynamic membership fields are enforced on the server as well as in the UI.
+import {
+  defaultMembershipForm,
+  membershipFormSchema,
+  validateFormAnswers,
+  videoSource,
+  type FormField,
+} from "../lib/form-schema";
+const choiceField: FormField = {
+  id: "interests",
+  type: "multiselect",
+  label: { ar: "اهتماماتك", en: "Interests" },
+  description: { ar: "", en: "" },
+  required: true,
+  mediaUrl: "",
+  options: [
+    {
+      id: "cad",
+      label: { ar: "تصميم", en: "CAD" },
+      imageUrl: "https://example.com/cad.png",
+    },
+    { id: "robotics", label: { ar: "روبوت", en: "Robotics" }, imageUrl: "" },
+  ],
+};
+test("form schemas reject duplicate identifiers, missing choices, and unsafe media", () => {
+  const base = structuredClone(defaultMembershipForm);
+  assert.equal(membershipFormSchema.safeParse(base).success, true);
+  assert.equal(
+    membershipFormSchema.safeParse({
+      ...base,
+      fields: [...base.fields, base.fields[0]],
+    }).success,
+    false,
+  );
+  assert.equal(
+    membershipFormSchema.safeParse({
+      ...base,
+      fields: [{ ...choiceField, options: [] }],
+    }).success,
+    false,
+  );
+  assert.equal(
+    membershipFormSchema.safeParse({
+      ...base,
+      fields: [{ ...choiceField, mediaUrl: "javascript:alert(1)" }],
+    }).success,
+    false,
+  );
+  assert.equal(
+    membershipFormSchema.safeParse({
+      ...base,
+      fields: [
+        { ...choiceField, type: "video", mediaUrl: "https://evil.test/embed" },
+      ],
+    }).success,
+    false,
+  );
+});
+test("required answers, choice membership, typed values, and unknown fields cannot be bypassed", () => {
+  const form = { ...defaultMembershipForm, fields: [choiceField] };
+  assert.deepEqual(validateFormAnswers(form, { interests: ["cad"] }), {
+    interests: ["cad"],
+  });
+  for (const answers of [
+    {},
+    { interests: [] },
+    { interests: ["fake"] },
+    { interests: ["cad", "cad"] },
+    { interests: "cad" },
+    { interests: ["cad"], invented: "x" },
+  ])
+    assert.throws(() => validateFormAnswers(form, answers));
+  for (const [type, value] of [
+    ["email", "wrong"],
+    ["number", "Infinity"],
+    ["date", "2026-02-31"],
+    ["checkbox", "true"],
+  ] as const)
+    assert.throws(() =>
+      validateFormAnswers(
+        { ...form, fields: [{ ...choiceField, type }] },
+        { interests: value },
+      ),
+    );
+  assert.deepEqual(
+    validateFormAnswers(
+      {
+        ...form,
+        fields: [{ ...choiceField, type: "section", required: false }],
+      },
+      {},
+    ),
+    {},
+  );
+});
+test("video embeds allow only known YouTube IDs or direct HTTPS video files", () => {
+  assert.deepEqual(videoSource("https://youtu.be/dQw4w9WgXcQ"), {
+    type: "youtube",
+    url: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+  });
+  assert.equal(
+    videoSource("https://youtube.com.evil.test/watch?v=dQw4w9WgXcQ"),
+    null,
+  );
+  assert.equal(videoSource("https://example.com/clip.mp4")?.type, "file");
+  assert.equal(videoSource("javascript:alert(1)"), null);
+});

@@ -87,7 +87,11 @@ async function main() {
         ? "/usr/bin/chromium"
         : chromium.executablePath()),
     headless: true,
-    args: ["--no-sandbox", "--disable-dev-shm-usage"],
+    args: [
+      "--no-sandbox",
+      "--disable-dev-shm-usage",
+      "--enable-unsafe-swiftshader",
+    ],
   });
   const page = await browser.newPage({
       viewport: { width: 1440, height: 1000 },
@@ -105,16 +109,20 @@ async function main() {
   assert.ok(
     (await page.locator("h1").innerText()).includes("الهندسة الميكانيكية"),
   );
-  const stage = page.locator(".mechanical-stage"),
-    box = (await stage.boundingBox())!;
-  await page.mouse.move(box.x + 100, box.y + 130);
-  await page.mouse.down();
-  await page.mouse.move(box.x + 170, box.y + 170, { steps: 8 });
-  await page.mouse.up();
-  await page.getByRole("button", { name: "إيقاف الحركة" }).click();
-  await page.getByRole("button", { name: "تشغيل الحركة" }).waitFor();
-  await page.getByRole("button", { name: "إعادة الضبط" }).click();
-  pass("Arabic home, draggable mechanisms, pause and reset");
+  await page.locator(".gear-canvas.ready").waitFor();
+  assert.equal(
+    await page.locator(".auto-mechanics button, .auto-mechanics input").count(),
+    0,
+  );
+  await page
+    .getByRole("link", { name: "انضم لنادي ASME", exact: true })
+    .click();
+  await page.locator(".membership-dynamic").waitFor();
+  assert.ok(
+    (await page.locator(".membership-dynamic fieldset:disabled").count()) > 0,
+  );
+  await page.goto(host, { waitUntil: "networkidle" });
+  pass("Arabic home, automatically rendered 3D gear, direct join form preview");
   await page.getByRole("button", { name: "Switch to English" }).click();
   await page.waitForFunction(() => document.documentElement.dir === "ltr");
   await page.getByRole("button", { name: "Toggle theme" }).click();
@@ -158,6 +166,125 @@ async function main() {
     .getByRole("link", { name: "Join the club" })
     .waitFor();
   pass("admin login, real settings save, conditional membership CTA");
+  await page
+    .getByRole("button", { name: "Forms & surveys", exact: true })
+    .click();
+  await page.locator(".builder-palette").waitFor();
+  await page
+    .locator(".builder-palette")
+    .getByRole("button", { name: "Multiple choice", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Duplicate block", exact: true })
+    .last()
+    .click();
+  await page
+    .getByRole("button", { name: "Delete block", exact: true })
+    .last()
+    .click();
+  await page
+    .locator(".builder-palette")
+    .getByRole("button", { name: "Video", exact: true })
+    .click();
+  await page
+    .getByRole("textbox", { name: "YouTube or MP4 / WebM URL", exact: true })
+    .fill("https://youtu.be/dQw4w9WgXcQ");
+  await page
+    .locator(".builder-palette")
+    .getByRole("button", { name: "Image", exact: true })
+    .click();
+  const imageBlock = page.locator(".builder-question.editing");
+  await imageBlock.getByText("Upload an image", { exact: true }).click();
+  await imageBlock
+    .getByPlaceholder("Example: Original work shared with the club")
+    .fill("Original test fixture shared with the club");
+  await imageBlock.locator('input[type="file"]').setInputFiles({
+    name: "form-image.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+      "base64",
+    ),
+  });
+  await page.waitForFunction(() =>
+    (
+      document.querySelector(
+        '.builder-question.editing input[type="url"]',
+      ) as HTMLInputElement
+    )?.value.startsWith("/api/files/"),
+  );
+  await page.screenshot({
+    path: ".data/browser-form-editor.png",
+    fullPage: true,
+  });
+  await page.getByRole("tab", { name: "Preview", exact: true }).click();
+  await page.getByRole("button", { name: "Play YouTube video" }).waitFor();
+  await page
+    .getByRole("button", { name: "Save and publish", exact: true })
+    .click();
+  await page.locator(".builder-palette").waitFor();
+  const savedForm = (
+    await db.platformSetting.findUniqueOrThrow({
+      where: { key: "membershipForm" },
+    })
+  ).value as { version: number; fields: unknown[] };
+  assert.equal(savedForm.version, 2);
+  assert.equal(savedForm.fields.length, 8);
+  await page.getByRole("tab", { name: "Responses", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Load / refresh responses", exact: true })
+    .click();
+  await page.getByText("No responses yet", { exact: true }).waitFor();
+  await page.screenshot({
+    path: ".data/browser-form-builder.png",
+    fullPage: true,
+  });
+  pass(
+    "form builder adds, duplicates, removes, previews media, and publishes to PostgreSQL",
+  );
+  await page.goto(`${host}/join`, { waitUntil: "networkidle" });
+  await page.getByLabel("University ID", { exact: true }).fill("987654");
+  await page.getByLabel("College", { exact: true }).fill("Engineering");
+  await page.getByLabel("Major", { exact: true }).fill("Mechanical");
+  await page.getByLabel("Study level", { exact: true }).fill("3");
+  await page
+    .getByLabel("What would you like to create with us?", { exact: true })
+    .fill("I want to build mechanical projects with the club.");
+  await page.locator('input[name="consent"]').check();
+  await page
+    .getByRole("button", { name: "Apply and make your mark", exact: true })
+    .click();
+  await page
+    .getByRole("heading", {
+      name: "Application received! We look forward to building with you.",
+    })
+    .waitFor();
+  assert.ok(
+    await db.membershipApplication.findFirst({
+      where: { user: { email: "organizer@example.test" } },
+    }),
+  );
+  await page.goto(`${host}/admin`, { waitUntil: "networkidle" });
+  await page
+    .getByRole("button", { name: "Forms & surveys", exact: true })
+    .click();
+  await page.getByRole("tab", { name: "Responses", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Load / refresh responses", exact: true })
+    .click();
+  await page.locator(".response-card summary").click();
+  await page.getByText("987654", { exact: true }).waitFor();
+  const download = page.waitForEvent("download");
+  await page
+    .getByRole("button", {
+      name: "Export displayed responses CSV",
+      exact: true,
+    })
+    .click();
+  assert.ok((await download).suggestedFilename().endsWith(".csv"));
+  pass(
+    "public form submission, private admin response, uploaded image and CSV download",
+  );
   await page.getByRole("button", { name: "Courses", exact: true }).click();
   await page.getByRole("button", { name: "Create", exact: true }).click();
   const modal = page.getByRole("dialog");
@@ -203,6 +330,8 @@ async function main() {
     "/admin",
   ]) {
     await page.goto(host + path, { waitUntil: "networkidle" });
+    await page.waitForFunction(() => document.documentElement.lang === "en");
+    await page.locator("h1").waitFor();
     assert.equal(await page.locator("h1").count(), 1, path);
     assert.equal(
       await page.evaluate(
@@ -212,6 +341,22 @@ async function main() {
       path,
     );
   }
+  await page.goto(`${host}/contact`, { waitUntil: "networkidle" });
+  await page
+    .getByRole("button", { name: "التبديل إلى العربية", exact: true })
+    .click();
+  await page.waitForFunction(() => document.documentElement.dir === "rtl");
+  assert.equal(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
+    false,
+    "Arabic contact form has no off-screen input overflow",
+  );
+  await page
+    .getByRole("button", { name: "Switch to English", exact: true })
+    .click();
+  await page.waitForFunction(() => document.documentElement.dir === "ltr");
   pass("public, student, and admin routes render without desktop overflow");
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(host, { waitUntil: "networkidle" });

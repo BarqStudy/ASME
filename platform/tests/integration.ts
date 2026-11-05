@@ -1,6 +1,7 @@
 import "dotenv/config";
 import assert from "node:assert/strict";
 import pg from "pg";
+import { defaultMembershipForm } from "../lib/form-schema";
 import { spawn, execFileSync } from "node:child_process";
 import { readFile, readdir, mkdir } from "node:fs/promises";
 import { setTimeout as delay } from "node:timers/promises";
@@ -628,6 +629,127 @@ async function main() {
   assert.equal(large.status, 413);
   pass(
     "last super administrator guard, rejected role injection and bounded request bodies",
+  );
+  const customForm = structuredClone(defaultMembershipForm);
+  customForm.fields.push({
+    id: "interests",
+    type: "multiselect",
+    label: { ar: "اهتماماتك", en: "Interests" },
+    description: { ar: "", en: "" },
+    required: true,
+    mediaUrl: "",
+    options: [
+      {
+        id: "cad",
+        label: { ar: "تصميم", en: "CAD" },
+        imageUrl: "https://example.test/cad.png",
+      },
+      { id: "robotics", label: { ar: "روبوت", en: "Robotics" }, imageUrl: "" },
+    ],
+  });
+  await request(
+    "admin/forms",
+    { definition: customForm, open: true },
+    studentCookie,
+    403,
+  );
+  await request(
+    "admin/forms",
+    { definition: customForm, open: true },
+    rootCookie,
+  );
+  await request(
+    "admin/forms",
+    { definition: customForm, open: true },
+    rootCookie,
+    409,
+  );
+  customForm.version = 2;
+  await request(
+    "membership",
+    {
+      universityId: "123",
+      college: "Engineering",
+      major: "Mechanical",
+      level: "3",
+      motivation: "A sufficiently long reason to join",
+      skills: [],
+      consent: true,
+    },
+    studentCookie,
+    409,
+  );
+  await db.membershipApplication.update({
+    where: { userId: student.id },
+    data: { status: "NEEDS_INFO" },
+  });
+  const customPayload = {
+    formVersion: 2,
+    answers: {
+      universityId: "SECRET-12345",
+      college: "Engineering",
+      major: "Mechanical",
+      level: "3",
+      motivation: "I want to build with the club",
+      interests: ["cad"],
+    },
+    consent: true,
+  };
+  await request(
+    "membership",
+    { ...customPayload, formVersion: 1 },
+    studentCookie,
+    409,
+  );
+  await request(
+    "membership",
+    { ...customPayload, answers: { ...customPayload.answers, interests: [] } },
+    studentCookie,
+    400,
+  );
+  await request(
+    "membership",
+    {
+      ...customPayload,
+      answers: { ...customPayload.answers, interests: ["invented"] },
+    },
+    studentCookie,
+    400,
+  );
+  await request("membership", customPayload, studentCookie, 201);
+  const received = (
+    await db.membershipApplication.findUniqueOrThrow({
+      where: { userId: student.id },
+    })
+  ).payload as {
+    answers: { interests: string[] };
+    formSnapshot: typeof customForm;
+  };
+  assert.deepEqual(received.answers.interests, ["cad"]);
+  assert.equal(received.formSnapshot.version, 2);
+  customForm.fields.pop();
+  await request(
+    "admin/forms",
+    { definition: customForm, open: false },
+    rootCookie,
+  );
+  assert.equal(
+    (
+      (
+        await db.membershipApplication.findUniqueOrThrow({
+          where: { userId: student.id },
+        })
+      ).payload as typeof received
+    ).formSnapshot.fields.at(-1)?.id,
+    "interests",
+  );
+  await request("membership", customPayload, studentCookie, 409);
+  const publicData = (await request("content")).data;
+  assert.equal(JSON.stringify(publicData).includes("SECRET-12345"), false);
+  assert.equal(JSON.stringify(publicData).includes('"membershipForm"'), true);
+  await request("admin/forms", undefined, "", 401);
+  pass(
+    "custom forms enforce permissions, versions, required choices, registration status, and immutable private response snapshots",
   );
   await request("auth/recover", { email: student.email });
   files = await readdir(process.env.MAIL_DIR!);

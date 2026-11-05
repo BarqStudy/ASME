@@ -1,3 +1,4 @@
+import { getMembershipForm, validateFormAnswers } from "@/lib/form-schema";
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
@@ -483,7 +484,44 @@ async function handler(request: NextRequest, context: Context) {
         });
         if (!(setting?.value as { open?: boolean })?.open)
           throw new AppError(409, "MEMBERSHIP_CLOSED");
-        const data = v.membership.parse(await body(request));
+        const raw = await body(request);
+        const formSetting = await db.platformSetting.findUnique({
+          where: { key: "membershipForm" },
+        });
+        let data:
+          | z.infer<typeof v.membership>
+          | {
+              committeeId?: string;
+              answers: Record<string, string | string[] | boolean>;
+              formSnapshot: ReturnType<typeof getMembershipForm>;
+              consent: true;
+            };
+        if (raw && typeof raw === "object" && "answers" in raw) {
+          const input = z
+            .object({
+              formVersion: z.number().int(),
+              answers: z.unknown(),
+              consent: z.literal(true),
+            })
+            .strict()
+            .parse(raw);
+          const definition = getMembershipForm(formSetting?.value);
+          if (input.formVersion !== definition.version)
+            throw new AppError(409, "FORM_CHANGED");
+          try {
+            data = {
+              answers: validateFormAnswers(definition, input.answers),
+              formSnapshot: definition,
+              consent: true,
+            };
+          } catch {
+            throw new AppError(400, "VALIDATION_ERROR");
+          }
+        } else {
+          // Existing clients remain compatible only before a custom form is published.
+          if (formSetting) throw new AppError(409, "FORM_CHANGED");
+          data = v.membership.parse(raw);
+        }
         if (
           data.committeeId &&
           !(await db.committee.findFirst({

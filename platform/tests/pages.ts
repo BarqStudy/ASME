@@ -68,7 +68,11 @@ async function main() {
       (existsSync("/usr/bin/chromium")
         ? "/usr/bin/chromium"
         : chromium.executablePath()),
-    args: ["--no-sandbox", "--disable-dev-shm-usage"],
+    args: [
+      "--no-sandbox",
+      "--disable-dev-shm-usage",
+      "--enable-unsafe-swiftshader",
+    ],
   });
   const page = await browser.newPage({
       viewport: { width: 1440, height: 1000 },
@@ -99,10 +103,39 @@ async function main() {
     await page.getByRole("link", { name: "دخول", exact: true }).count(),
     0,
   );
-  await page.getByRole("button", { name: "إيقاف الحركة" }).click();
-  await page.getByRole("button", { name: "تشغيل الحركة" }).waitFor();
-  await page.getByRole("button", { name: "إعادة الضبط" }).click();
-  pass("static Arabic homepage, correct logo base path, interactive mechanics");
+  await page.locator(".gear-canvas.ready").waitFor();
+  assert.equal(
+    await page.locator(".auto-mechanics button, .auto-mechanics input").count(),
+    0,
+  );
+  assert.equal(
+    await page
+      .locator(".blue-period")
+      .evaluate((e) => getComputedStyle(e).color),
+    "rgb(40, 121, 186)",
+  );
+  await page
+    .getByRole("link", { name: "انضم لنادي ASME", exact: true })
+    .click();
+  await page.waitForURL("**/ASME/join/");
+  await page
+    .getByRole("heading", { name: "انضم لنادي ASME", exact: true })
+    .waitFor();
+  assert.ok(
+    (await page.locator(".membership-dynamic fieldset:disabled").count()) > 0,
+  );
+  assert.equal(
+    await page
+      .locator(
+        ".membership-dynamic button[type=submit], .membership-dynamic > button",
+      )
+      .isDisabled(),
+    true,
+  );
+  await page.goto(base + "/", { waitUntil: "networkidle" });
+  pass(
+    "3D gear without controls, blue punctuation, join CTA opens a disabled form preview",
+  );
   await page
     .locator(".top-nav")
     .getByRole("link", { name: "الفعاليات", exact: true })
@@ -163,7 +196,6 @@ async function main() {
   for (const route of [
     "auth/login",
     "auth/register",
-    "join",
     "portal",
     "admin",
     "projects/submit",
@@ -185,6 +217,19 @@ async function main() {
     );
   }
   pass("unavailable services never collect account or membership information");
+  await page.goto(base + "/", { waitUntil: "networkidle" });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.locator(".gear-canvas.ready").waitFor();
+  const before = await page.locator(".automatic-stage").screenshot();
+  await page.waitForTimeout(700);
+  const after = await page.locator(".automatic-stage").screenshot();
+  assert.notDeepEqual(
+    before,
+    after,
+    "gear rotates automatically without any interaction",
+  );
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  pass("automatic 3D rotation changes the rendered scene");
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(base + "/", { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "Menu", exact: true }).click();
@@ -206,6 +251,15 @@ async function main() {
   });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(base + "/", { waitUntil: "networkidle" });
+  await page
+    .getByRole("button", { name: "التبديل إلى العربية", exact: true })
+    .click();
+  await page.getByRole("button", { name: "تغيير المظهر", exact: true }).click();
+  await page.waitForFunction(
+    () =>
+      document.documentElement.lang === "ar" &&
+      document.documentElement.dataset.theme === "light",
+  );
   await page.screenshot({
     path: path.join(root, "platform/.data/pages-desktop.png"),
     fullPage: true,

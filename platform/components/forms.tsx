@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useId } from "react";
 import { ArrowUpRight, Send, CheckCircle2 } from "lucide-react";
 import { useHub, api } from "./provider";
 export function Field({
@@ -122,112 +121,7 @@ export function Gate({ children }: { children: React.ReactNode }) {
     );
   return <>{children}</>;
 }
-export function MembershipForm() {
-  const router = useRouter();
-  const { t, content, toast, error } = useHub(),
-    [busy, setBusy] = useState(false);
-  const setting = content.settings.membership as {
-    open?: boolean;
-    notice?: unknown;
-  };
-  if (!setting?.open)
-    return (
-      <div className="notice">
-        <h3>{t("التسجيل مغلق حاليًا", "Applications are currently closed")}</h3>
-        <p>
-          {t(
-            "سيظهر زر الانضمام تلقائيًا عند فتح التسجيل من إدارة النادي. يمكنك إنشاء حساب لاستكشاف الأنشطة.",
-            "The join button appears automatically when the club opens applications. You can create an account to explore activities.",
-          )}
-        </p>
-        <Link href="/auth/register" className="button secondary">
-          {t("إنشاء حساب", "Create an account")}
-        </Link>
-      </div>
-    );
-  return (
-    <Gate>
-      <form
-        className="form glass form-card"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          const f = fields(e.currentTarget);
-          setBusy(true);
-          try {
-            await api("membership", {
-              universityId: f.universityId,
-              college: f.college,
-              major: f.major,
-              level: f.level,
-              committeeId: f.committeeId || undefined,
-              skills: split(f.skills),
-              motivation: f.motivation,
-              consent: f.consent === "on",
-            });
-            toast(t("أُرسل طلبك للمراجعة", "Your application is under review"));
-            router.push("/portal");
-          } catch (err) {
-            error(err);
-          } finally {
-            setBusy(false);
-          }
-        }}
-      >
-        <div className="two-cols">
-          <Field
-            name="universityId"
-            label={t("الرقم الجامعي", "University ID")}
-            minLength={3}
-          />
-          <Field name="college" label={t("الكلية", "College")} />
-          <Field name="major" label={t("التخصص", "Major")} />
-          <Field name="level" label={t("المستوى الدراسي", "Study level")} />
-        </div>
-        <label className="field">
-          <span>{t("اللجنة المفضلة", "Preferred committee")}</span>
-          <select name="committeeId">
-            <option value="">{t("بدون تفضيل", "No preference")}</option>
-            {content.committees.map((c) => (
-              <option key={c.id} value={c.id}>
-                {t(
-                  (c.title as { ar: string }).ar,
-                  (c.title as { en: string }).en,
-                )}
-              </option>
-            ))}
-          </select>
-        </label>
-        <Field
-          name="skills"
-          label={t("المهارات", "Skills")}
-          hint={t("افصل المهارات بفاصلة ,", "Separate skills with commas")}
-          required={false}
-        />
-        <Field
-          name="motivation"
-          label={t("لماذا ترغب بالانضمام؟", "Why would you like to join?")}
-          type="textarea"
-          minLength={20}
-          maxLength={5000}
-        />
-        <label className="check">
-          <input type="checkbox" name="consent" required />
-          {t(
-            "أوافق على استخدام بياناتي لمراجعة عضوية النادي. أفهم أنها مستقلة عن عضوية ASME الدولية.",
-            "I consent to using my information to review club membership, which is separate from international ASME membership.",
-          )}
-        </label>
-        <button className="button primary" disabled={busy}>
-          {t(
-            busy ? "جارٍ الإرسال…" : "إرسال طلب العضوية",
-            busy ? "Submitting…" : "Submit application",
-          )}
-          <ArrowUpRight size={18} />
-        </button>
-      </form>
-    </Gate>
-  );
-}
+export { MembershipForm } from "./membership";
 export function ContactForm() {
   const { t, toast, error } = useHub(),
     [busy, setBusy] = useState(false);
@@ -295,31 +189,49 @@ export function ContactForm() {
 export function FileUpload({
   onUploaded,
   isPublic = false,
+  imagesOnly = false,
 }: {
   onUploaded: (asset: { id: string; originalName: string }) => void;
   isPublic?: boolean;
+  imagesOnly?: boolean;
 }) {
   const { t, toast, error } = useHub(),
     [busy, setBusy] = useState(false);
+  const uploadId = useId();
   return (
     <div className="upload-box">
       <label className="field">
         <span>
           {t(
-            "ملف PDF أو صورة PNG / JPEG، حتى 10 MB",
-            "PDF or PNG / JPEG, up to 10 MB",
+            imagesOnly
+              ? "صورة PNG / JPEG، حتى 10 MB"
+              : "ملف PDF أو صورة PNG / JPEG، حتى 10 MB",
+            imagesOnly
+              ? "PNG / JPEG image, up to 10 MB"
+              : "PDF or PNG / JPEG, up to 10 MB",
           )}
         </span>
         <input
-          id={`upload-${isPublic}`}
+          id={`upload-${uploadId}`}
           type="file"
-          accept="application/pdf,image/png,image/jpeg"
+          accept={
+            imagesOnly
+              ? "image/png,image/jpeg"
+              : "application/pdf,image/png,image/jpeg"
+          }
           disabled={busy}
           onChange={async (e) => {
             const file = e.currentTarget.files?.[0];
             if (!file) return;
+            if (
+              imagesOnly &&
+              !["image/png", "image/jpeg"].includes(file.type)
+            ) {
+              error(new Error("VALIDATION_ERROR"));
+              return;
+            }
             const licenseInput = document.getElementById(
-              `license-${isPublic}`,
+              `license-${uploadId}`,
             ) as HTMLInputElement;
             const license = licenseInput?.value || "";
             if (license.length < 3) {
@@ -357,7 +269,7 @@ export function FileUpload({
           )}
         </span>
         <input
-          id={`license-${isPublic}`}
+          id={`license-${uploadId}`}
           maxLength={1000}
           placeholder={t(
             "مثال: عمل أصلي أسمح باستخدامه للنادي",

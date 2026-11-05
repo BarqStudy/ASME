@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { useHub, api } from "./provider";
 import { Field, Bilingual, fields, bifields, FileUpload, Gate } from "./forms";
+import { FormBuilder, ApplicationAnswers } from "./form-builder";
 type Row = Record<string, unknown> & { id?: string };
 const asString = (v: unknown) => (typeof v === "string" ? v : "");
 const array = (v: unknown) => (Array.isArray(v) ? v : []) as Row[];
@@ -45,6 +46,7 @@ const moduleList = [
   ["committees", "اللجان", "Committees", Users],
   ["inbox", "صندوق الوارد", "Inbox", Mail],
   ["users", "المستخدمون والصلاحيات", "Users & roles", ShieldCheck],
+  ["forms", "النماذج والاستبيانات", "Forms & surveys", ListChecks],
   ["settings", "إعدادات النادي", "Club settings", Settings2],
   ["audit", "سجل العمليات", "Audit log", ScrollText],
 ] as const;
@@ -254,6 +256,8 @@ export function Admin() {
                   </ResponsiveContainer>
                 </div>
               </>
+            ) : module === "forms" ? (
+              <FormBuilder rows={rows} onSave={action} />
             ) : module === "settings" ? (
               <Settings rows={rows} onSave={action} />
             ) : (
@@ -460,33 +464,39 @@ export function Admin() {
               {module === "members" ? (
                 <>
                   <p>{asString((selected.user as Row)?.fullName)}</p>
-                  <dl className="data-list">
-                    {Object.entries((selected.payload || {}) as Row).map(
-                      ([k, val]) => (
-                        <div key={k}>
-                          <dt>
-                            {(
-                              {
-                                universityId: t(
-                                  "الرقم الجامعي",
-                                  "University ID",
-                                ),
-                                college: t("الكلية", "College"),
-                                major: t("التخصص", "Major"),
-                                level: t("المستوى", "Level"),
-                                skills: t("المهارات", "Skills"),
-                                motivation: t("الدافع", "Motivation"),
-                                consent: t("الموافقة", "Consent"),
-                              } as Record<string, string>
-                            )[k] || k}
-                          </dt>
-                          <dd>
-                            {Array.isArray(val) ? val.join(", ") : String(val)}
-                          </dd>
-                        </div>
-                      ),
-                    )}
-                  </dl>
+                  {(selected.payload as Row)?.formSnapshot ? (
+                    <ApplicationAnswers payload={selected.payload as Row} />
+                  ) : (
+                    <dl className="data-list">
+                      {Object.entries((selected.payload || {}) as Row).map(
+                        ([k, val]) => (
+                          <div key={k}>
+                            <dt>
+                              {(
+                                {
+                                  universityId: t(
+                                    "الرقم الجامعي",
+                                    "University ID",
+                                  ),
+                                  college: t("الكلية", "College"),
+                                  major: t("التخصص", "Major"),
+                                  level: t("المستوى", "Level"),
+                                  skills: t("المهارات", "Skills"),
+                                  motivation: t("الدافع", "Motivation"),
+                                  consent: t("الموافقة", "Consent"),
+                                } as Record<string, string>
+                              )[k] || k}
+                            </dt>
+                            <dd>
+                              {Array.isArray(val)
+                                ? val.join(", ")
+                                : String(val)}
+                            </dd>
+                          </div>
+                        ),
+                      )}
+                    </dl>
+                  )}
                   <form
                     className="form"
                     onSubmit={async (e) => {

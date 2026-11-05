@@ -68,7 +68,9 @@ export async function publicContent(q = "") {
       select: { id: true, title: true, description: true },
     }),
     db.platformSetting.findMany({
-      where: { key: { in: ["club", "membership", "leadership"] } },
+      where: {
+        key: { in: ["club", "membership", "membershipForm", "leadership"] },
+      },
     }),
     db.clubMember.count({ where: { active: true } }),
     db.attendanceRecord.count(),

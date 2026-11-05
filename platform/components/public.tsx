@@ -210,8 +210,8 @@ function Home() {
           <h1>
             {t("نصنع مستقبل", "Engineering")}
             <br />
-            <span>{t("الهندسة الميكانيكية", "what’s next.")}</span>
-            <i className="orange-period">.</i>
+            <span>{t("الهندسة الميكانيكية", "what’s next")}</span>
+            <i className="blue-period">.</i>
           </h1>
           <p>
             {t(
@@ -220,11 +220,8 @@ function Home() {
             )}
           </p>
           <div className="hero-buttons">
-            <Link className="button primary" href={join ? "/join" : "/events"}>
-              {t(
-                join ? "كن جزءًا من الحركة" : "اكتشف الفعاليات",
-                join ? "Be part of the movement" : "Explore events",
-              )}
+            <Link className="button primary" href="/join">
+              {t("انضم لنادي ASME", "Join the ASME club")}
               <ArrowUpRight size={19} />
             </Link>
             <Link className="text-button" href="/about">
@@ -1415,7 +1412,7 @@ export function PublicPage({ path }: { path: string[] }) {
   if (
     isPages &&
     (path[0] === "contact" ||
-      ["auth", "portal", "admin", "join", "u", "verify"].includes(path[0]) ||
+      ["auth", "portal", "admin", "u", "verify"].includes(path[0]) ||
       (path[0] === "projects" && path[1] === "submit"))
   )
     return <PagesUnavailable contact={path[0] === "contact"} />;

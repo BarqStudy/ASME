@@ -2,6 +2,7 @@ import { z } from "zod";
 import { db } from "./db";
 import { AppError, authorize, audit, notify, can, roles } from "./security";
 import * as v from "./validation";
+import { membershipFormSchema, getMembershipForm } from "./form-schema";
 import { checkIn, issueCertificate } from "./events";
 import type { User, Prisma } from "@prisma/client";
 export async function adminGet(
@@ -132,6 +133,11 @@ export async function adminGet(
         take: 50,
         skip,
         include: { actor: { select: { fullName: true } } },
+      });
+    case "forms":
+      authorize(user, "settings");
+      return db.platformSetting.findMany({
+        where: { key: { in: ["membershipForm", "membership"] } },
       });
     case "settings":
       authorize(user, "settings");
@@ -534,6 +540,47 @@ export async function adminWrite(
       result = id
         ? await db.task.update({ where: { id }, data })
         : await db.task.create({ data });
+      break;
+    }
+    case "forms": {
+      authorize(user, "settings");
+      const data = z
+        .object({ definition: membershipFormSchema, open: z.boolean() })
+        .strict()
+        .parse(raw);
+      result = await db.$transaction(
+        async (tx) => {
+          const existing = await tx.platformSetting.findUnique({
+            where: { key: "membershipForm" },
+          });
+          const current = getMembershipForm(existing?.value);
+          if (data.definition.version !== current.version)
+            throw new AppError(409, "FORM_CHANGED");
+          const value = { ...data.definition, version: current.version + 1 };
+          await tx.platformSetting.upsert({
+            where: { key: "membershipForm" },
+            create: { key: "membershipForm", value },
+            update: { value },
+          });
+          const membership = await tx.platformSetting.findUnique({
+            where: { key: "membership" },
+          });
+          const setting = {
+            ...((membership?.value || {}) as Record<
+              string,
+              Prisma.InputJsonValue
+            >),
+            open: data.open,
+          };
+          await tx.platformSetting.upsert({
+            where: { key: "membership" },
+            create: { key: "membership", value: setting },
+            update: { value: setting },
+          });
+          return { version: value.version };
+        },
+        { isolationLevel: "Serializable" },
+      );
       break;
     }
     case "settings": {

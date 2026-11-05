@@ -83,6 +83,10 @@ const errors: Record<string, [string, string]> = {
     "تحقق من الحقول والتواريخ المطلوبة",
     "Check the required fields and dates",
   ],
+  FORM_CHANGED: [
+    "تغيّر النموذج. حدّث الصفحة للاطلاع على أحدث نسخة قبل الإرسال أو الحفظ.",
+    "The form has changed. Refresh the page before submitting or saving.",
+  ],
   MEMBERSHIP_CLOSED: [
     "التسجيل في العضوية مغلق حاليًا",
     "Membership applications are closed",
