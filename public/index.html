@@ -14,19 +14,24 @@
   <a class="skip-link" href="#main">انتقل إلى المحتوى</a>
   <div id="intro" aria-hidden="true"><canvas width="200" height="200"></canvas></div>
   <header>
-    <div class="wrap nav">
+    <div class="sidebar">
       <a class="brand" href="#top" aria-label="نادي الهندسة الميكانيكية، الرئيسية">
         <img src="/assets/logo.webp" alt="ASME" width="72" height="40">
         <span><b>نادي الهندسة الميكانيكية</b><small>جامعة نجران</small></span>
       </a>
-      <button id="menu" type="button" class="icon-btn" aria-label="القائمة" aria-expanded="false" aria-controls="nav" data-icon="menu"></button>
       <nav id="nav" aria-label="التنقل الرئيسي">
-        <a class="active" href="#top">الرئيسية</a>
-        <a href="#about">عن النادي</a>
-        <a href="#programs">الدورات والمعسكرات</a>
-        <a href="#news">الأخبار</a>
-        <a href="#contact">تواصل معنا</a>
+        <a class="active" href="#top" aria-current="location"><span class="icon" data-icon="home"></span>الرئيسية</a>
+        <a href="#about"><span class="icon" data-icon="user"></span>عن النادي</a>
+        <a href="#programs"><span class="icon" data-icon="calendar"></span>الدورات والمعسكرات</a>
+        <a href="#news"><span class="icon" data-icon="news"></span>الأخبار</a>
+        <a href="#achievements"><span class="icon" data-icon="award"></span>الإنجازات</a>
+        <a href="#structure"><span class="icon" data-icon="tree"></span>اللجان</a>
+        <a href="#contact"><span class="icon" data-icon="mail"></span>تواصل معنا</a>
       </nav>
+    </div>
+    <div class="wrap topbar">
+      <button id="menu" type="button" class="icon-btn" aria-label="القائمة" aria-expanded="false" aria-controls="nav" data-icon="menu"></button>
+      <span class="topbar-label">كلية الهندسة <span aria-hidden="true">/</span> جامعة نجران</span>
       <button class="btn outline" data-action="account" id="account"><span data-account-label>تسجيل الدخول</span><span class="icon" data-icon="user"></span></button>
     </div>
   </header>
@@ -35,7 +40,7 @@
       <div class="hero-content">
         <div class="hero-kicker"><i></i> الفرع الطلابي لـ <bdi>ASME</bdi> في جامعة نجران</div>
         <h1 id="hero-title">هندسةٌ تُصنع<br><em>بأيدي طلابها.</em></h1>
-        <p id="hero-description">مجتمع طلابي يجمع شغف الهندسة الميكانيكية بالتجربة والعمل، ويحوّل المعرفة إلى مهارات ومشاريع.</p>
+        <p id="hero-description">نادي الهندسة الميكانيكية بكلية الهندسة في جامعة نجران. نجمع طلاب التخصص حول التجربة العملية والتطوير المهني، ونربطهم بالمجتمع الهندسي وشبكة ASME العالمية.</p>
         <div class="hero-actions">
           <button class="btn primary" data-action="join">انضم إلى النادي <span class="icon" data-icon="up-left"></span></button>
         </div>
@@ -72,12 +77,12 @@
         <article class="purpose">
           <div class="purpose-icon" data-icon="eye"></div>
           <h3>رؤيتنا</h3>
-          <p>أن نكون مجتمعًا طلابيًا رائدًا في الهندسة الميكانيكية، يطوّر مهارات أعضائه ويمنحهم مساحة للابتكار والتجربة.</p>
+          <p>أن يكون النادي نموذجًا يُحتذى به في التطوير المهني، وأن يوفر نافذة لمهنة الهندسة وتطبيقاتها في الصناعة للطلاب.</p>
         </article>
         <article class="purpose">
           <div class="purpose-icon" data-icon="target"></div>
           <h3>رسالتنا</h3>
-          <p>ربط المعرفة الأكاديمية بالتطبيق العملي من خلال التدريب والمشاريع والعمل الجماعي، والإسهام في خدمة المجتمع.</p>
+          <p>إلهام، وتعليم، وجمع شمل أولئك المكرسين لتحسين جودة الحياة من خلال الهندسة.</p>
         </article>
       </div>
     </section>

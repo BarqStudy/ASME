@@ -73,6 +73,8 @@ function setList(selector, items, render, message) {
 }
 
 const icons = {
+  home: '<path d="m3 10 9-7 9 7v10h-6v-6H9v6H3Z"/>',
+  news: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8m-8 4h5"/>',
   menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
   close: '<path d="m6 6 12 12M18 6 6 18"/>',
   user: '<circle cx="12" cy="8" r="3"/><path d="M5 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/>',
@@ -343,13 +345,29 @@ async function safe(action) {
 }
 const actions = { account:profile, join, contact, certificates, admin:dashboard, close:() => dialog.close() };
 document.querySelectorAll('[data-action]').forEach(node => node.addEventListener('click', () => safe(actions[node.dataset.action])));
-$('#menu').addEventListener('click', () => {
-  $('#menu').setAttribute('aria-expanded', String($('#nav').classList.toggle('open')));
+const menu = $('#menu');
+const nav = $('#nav');
+function setMenu(open) {
+  nav.classList.toggle('open', open);
+  menu.setAttribute('aria-expanded', String(open));
+}
+menu.addEventListener('click', () => setMenu(!nav.classList.contains('open')));
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && nav.classList.contains('open')) {
+    setMenu(false);
+    menu.focus();
+  }
 });
-$('#nav').querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
-  $('#nav').classList.remove('open');
-  $('#menu').setAttribute('aria-expanded', 'false');
-  $('#nav').querySelector('.active')?.classList.remove('active');
-  link.classList.add('active');
-}));
+function updateNavigation() {
+  const hash = location.hash || '#top';
+  nav.querySelectorAll('a').forEach(link => {
+    const active = link.hash === hash;
+    link.classList.toggle('active', active);
+    if (active) link.setAttribute('aria-current', 'location');
+    else link.removeAttribute('aria-current');
+  });
+}
+nav.querySelectorAll('a').forEach(link => link.addEventListener('click', () => setMenu(false)));
+window.addEventListener('hashchange', updateNavigation);
+updateNavigation();
 safe(() => Promise.all([refresh(), api('session').then(setAccount)]));
