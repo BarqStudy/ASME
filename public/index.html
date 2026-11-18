@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f6f4ee">
+  <meta name="theme-color" content="#f3f6fb">
   <title>نادي الهندسة الميكانيكية | جامعة نجران</title>
   <link rel="icon" href="/assets/logo.webp">
   <link rel="stylesheet" href="/style.css">
@@ -32,21 +32,36 @@
   </header>
   <main id="main" class="wrap">
     <section class="hero" aria-label="نادي الهندسة الميكانيكية">
-      <div id="banner-image"></div>
       <div class="hero-content">
         <div class="hero-kicker"><i></i> الفرع الطلابي لـ <bdi>ASME</bdi> في جامعة نجران</div>
         <h1 id="hero-title">هندسةٌ تُصنع<br><em>بأيدي طلابها.</em></h1>
         <p id="hero-description">مجتمع طلابي يجمع شغف الهندسة الميكانيكية بالتجربة والعمل، ويحوّل المعرفة إلى مهارات ومشاريع.</p>
         <div class="hero-actions">
           <button class="btn primary" data-action="join">انضم إلى النادي <span class="icon" data-icon="up-left"></span></button>
-          <a class="btn glass" href="#programs">استكشف الفعاليات <span class="icon" data-icon="left"></span></a>
         </div>
       </div>
-      <div class="hero-foot">
-        <span lang="en" dir="ltr">ASME · NAJRAN UNIVERSITY</span>
+      <div class="hero-media">
+        <div id="banner-image"></div>
         <div id="banner-nav" aria-label="اختيار البنر"></div>
       </div>
     </section>
+    <nav class="quick-access" aria-label="خدمات النادي">
+      <a class="quick-card" href="#programs">
+        <span class="quick-icon" data-icon="calendar"></span>
+        <span><strong>الدورات والمعسكرات</strong><small>تصفّح الفعاليات وسجّل فيها</small></span>
+        <span class="icon quick-arrow" data-icon="left"></span>
+      </a>
+      <button class="quick-card" type="button" data-action="certificates">
+        <span class="quick-icon" data-icon="award"></span>
+        <span><strong>الشهادات الإلكترونية</strong><small>استعرض شهادتك واطبعها</small></span>
+        <span class="icon quick-arrow" data-icon="left"></span>
+      </button>
+      <a class="quick-card" href="#structure">
+        <span class="quick-icon" data-icon="tree"></span>
+        <span><strong>لجان النادي</strong><small>تعرّف على هيكلة الفريق</small></span>
+        <span class="icon quick-arrow" data-icon="left"></span>
+      </a>
+    </nav>
     <section id="about" class="section about">
       <div class="heading">
         <span class="eyebrow">عن النادي</span>
@@ -101,7 +116,6 @@
       <div class="footer-actions">
         <a href="#achievements">الإنجازات</a>
         <a href="#structure">اللجان</a>
-        <button data-action="certificates">الشهادات الإلكترونية</button>
         <button data-action="admin">لوحة الإدارة</button>
       </div>
     </div>

@@ -79,6 +79,8 @@ const icons = {
   left: '<path d="M19 12H5m6 6-6-6 6-6"/>',
   'up-left': '<path d="M17 17 7 7m0 8V7h8"/>',
   tree: '<rect x="9" y="2" width="6" height="5"/><path d="M12 7v6m-7 4v-4h14v4"/><rect x="2" y="17" width="6" height="5"/><rect x="16" y="17" width="6" height="5"/>',
+  calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4m8-4v4m-8 7h3m2 3h3"/>',
+  award: '<circle cx="12" cy="9" r="5"/><path d="m8.2 13-2 7 5.8-2 5.8 2-2-7m-3.8-6v4m-2-2h4"/>',
   mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
   eye: '<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="2.5"/>',
   target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="2"/>'
