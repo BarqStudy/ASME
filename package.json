@@ -1,1 +1,1 @@
-{"name":"asme-najran","private":true,"type":"module","scripts":{"start":"node server.mjs"},"engines":{"node":">=24"}}
+{"name":"asme-najran","private":true,"type":"module","scripts":{"start":"node server.mjs"},"engines":{"node":">=24"},"dependencies":{"pg":"^8.23.1"}}

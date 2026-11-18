@@ -1,41 +1,29 @@
 import { createServer } from 'node:http';
-import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
-import { DatabaseSync } from 'node:sqlite';
-import { access, mkdir, readFile } from 'node:fs/promises';
+import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import { access, readFile } from 'node:fs/promises';
 import { join, extname } from 'node:path';
+import { openStorage } from './storage.mjs';
 
-const dataDir = process.env.ASME_DATA_DIR || 'data';
-await mkdir(dataDir, { recursive: true, mode: 0o700 });
-const db = new DatabaseSync(join(dataDir, 'asme.sqlite'));
 const fonts = (await Promise.all(['Regular','Bold'].map(async weight => {
   const file = 'thmanyahserifdisplay-' + weight + '.otf';
   try { await access(join('public/assets', file)); return file; } catch { return null; }
 }))).filter(Boolean);
-db.exec(`CREATE TABLE IF NOT EXISTS records (kind TEXT, id TEXT, value TEXT NOT NULL, PRIMARY KEY(kind,id));
-CREATE UNIQUE INDEX IF NOT EXISTS unique_student ON records(json_extract(value,'$.student')) WHERE kind='member';
-CREATE UNIQUE INDEX IF NOT EXISTS unique_registration ON records(json_extract(value,'$.event'),json_extract(value,'$.email')) WHERE kind='registration';`);
-
-function list(kind) {
-  return db.prepare('SELECT value FROM records WHERE kind=? ORDER BY rowid').all(kind).map(row => JSON.parse(row.value));
+let storage;
+try {
+  storage = await openStorage();
+} catch (error) {
+  console.error('Unable to initialize ASME storage:', error.code || error.name);
+  process.exit(1);
 }
-function get(kind, id) {
-  const row = db.prepare('SELECT value FROM records WHERE kind=? AND id=?').get(kind, id);
-  return row ? JSON.parse(row.value) : null;
-}
-function save(kind, value, id = randomUUID()) {
-  value.id = id;
-  db.prepare('INSERT INTO records VALUES(?,?,?) ON CONFLICT(kind,id) DO UPDATE SET value=excluded.value')
-    .run(kind, id, JSON.stringify(value));
-  return value;
-}
+const { list, get, save, seed, removeSession, pruneSessions } = storage;
 for (const [id, name] of Object.entries({ admin: 'اللجنة الإدارية', media: 'لجنة الإعلام والتسويق', quality: 'لجنة التطوير والجودة', social: 'اللجنة الاجتماعية' })) {
-  if (!get('committee', id)) save('committee', { name }, id);
+  await seed('committee', id, { name });
 }
 const kinds = ['committee','event','article','achievement','banner'];
 const adminSecret = process.env.ASME_ADMIN_PASSWORD || '';
 if (adminSecret && adminSecret.length < 12) throw new Error('ASME_ADMIN_PASSWORD must contain at least 12 characters');
 const maxAge = 60 * 60 * 8;
-db.prepare("DELETE FROM records WHERE kind='session' AND json_extract(value,'$.expires') <= ?").run(Date.now());
+await pruneSessions(Date.now());
 const mime = { '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.otf':'font/otf' };
 class RequestError extends Error {
   constructor(message, status = 400) { super(message); this.status = status; }
@@ -79,9 +67,9 @@ function cookie(req, token, age) {
   const secure = req.socket.encrypted || req.headers['x-forwarded-proto'] === 'https';
   return 'asme_session=' + token + '; Path=/; HttpOnly; SameSite=Lax; Max-Age=' + age + (secure ? '; Secure' : '');
 }
-function session(req) {
+async function session(req) {
   const token = /(?:^|;\s*)asme_session=([a-f0-9]{64})(?:;|$)/.exec(req.headers.cookie || '')?.[1];
-  const item = token && get('session', token);
+  const item = token && await get('session', token);
   return item?.expires > Date.now() ? item : null;
 }
 function memberView(item) {
@@ -89,9 +77,9 @@ function memberView(item) {
   const { hash, salt, ...safe } = item;
   return safe;
 }
-function current(req) {
-  const item = session(req);
-  return { admin: item?.role === 'admin', member: item?.role === 'member' ? memberView(get('member', item.member)) : null };
+async function current(req) {
+  const item = await session(req);
+  return { admin: item?.role === 'admin', member: item?.role === 'member' ? memberView(await get('member', item.member)) : null };
 }
 async function readBody(req) {
   requireValue(req.headers['content-type']?.split(';')[0] === 'application/json', 'صيغة الطلب غير مدعومة', 415);
@@ -108,15 +96,14 @@ async function readBody(req) {
   requireValue(value && typeof value === 'object' && !Array.isArray(value), 'صيغة الطلب غير صالحة');
   return value;
 }
-function publicContent() {
-  return {
-    ...Object.fromEntries(kinds.map(kind => [kind, list(kind)])),
-    event: list('event').map(({ template, ...event }) => event),
-    fonts, email: process.env.ASME_CONTACT_EMAIL || ''
-  };
+async function publicContent(includeTemplates = false) {
+  const entries = await Promise.all(kinds.map(async kind => [kind, await list(kind)]));
+  const result = Object.fromEntries(entries);
+  if (!includeTemplates) result.event = result.event.map(({ template, ...event }) => event);
+  return { ...result, fonts, email: process.env.ASME_CONTACT_EMAIL || '' };
 }
-function certificate(registration) {
-  const event = get('event', registration.event);
+async function certificate(registration) {
+  const event = await get('event', registration.event);
   if (!event?.template || registration.attendance == null || registration.attendance < event.threshold) return null;
   return { name: registration.name, title: event.title, template: event.template, code: registration.id };
 }
@@ -159,18 +146,22 @@ function response(req, res, status, value, headers = {}) {
 }
 async function api(req, res, path) {
   const method = req.method;
-  const who = current(req);
+  const who = await current(req);
   const ok = (value = { ok: true }, headers) => response(req, res, 200, value, headers);
   if (method === 'GET') {
-    if (path === '/api/content') return ok(publicContent());
+    if (path === '/api/content') return ok(await publicContent());
     if (path === '/api/session') return ok(who);
     if (path === '/api/admin') {
       requireValue(who.admin, 'سجّل دخول الإدارة', 403);
-      return ok({ ...publicContent(), event: list('event'), member: list('member').map(memberView), registration: list('registration'), message: list('message') });
+      const [content, members, registration, message] = await Promise.all([
+        publicContent(true), list('member'), list('registration'), list('message')
+      ]);
+      return ok({ ...content, member: members.map(memberView), registration, message });
     }
     if (path === '/api/certificates') {
       requireValue(who.member, 'سجّل الدخول بحساب الطالب', 403);
-      return ok(list('registration').filter(r => r.member === who.member.id).map(certificate).filter(Boolean));
+      const registrations = (await list('registration')).filter(r => r.member === who.member.id);
+      return ok((await Promise.all(registrations.map(certificate))).filter(Boolean));
     }
   }
   requireValue(method === 'POST', 'المسار غير موجود', 404);
@@ -183,81 +174,81 @@ async function api(req, res, path) {
     if (admin) requireValue(adminSecret && sameSecret(password, adminSecret), 'بيانات الإدارة غير صالحة أو الدخول غير مفعّل', 403);
     else {
       const student = str(v.student, 'الرقم الجامعي', 30).toLowerCase().replace(/@nu\.edu\.sa$/, '');
-      member = list('member').find(m => m.student === student);
+      member = (await list('member')).find(m => m.student === student);
       const hash = secretHash(password, member?.salt || 'asme-login');
       requireValue(member && timingSafeEqual(hash, Buffer.from(member.hash, 'hex')), 'بيانات الدخول غير صحيحة', 403);
     }
     const token = randomBytes(32).toString('hex');
-    save('session', { role: admin ? 'admin' : 'member', member: member?.id, expires: Date.now() + maxAge * 1000 }, token);
+    await save('session', { role: admin ? 'admin' : 'member', member: member?.id, expires: Date.now() + maxAge * 1000 }, token);
     return ok({ admin, member: memberView(member) }, { 'Set-Cookie': cookie(req, token, maxAge) });
   }
   if (path === '/api/logout') {
-    const existing = session(req);
-    if (existing) db.prepare("DELETE FROM records WHERE kind='session' AND id=?").run(existing.id);
+    const existing = await session(req);
+    if (existing) await removeSession(existing.id);
     return ok(undefined, { 'Set-Cookie': cookie(req, '', 0) });
   }
   if (path === '/api/join') {
     const student = str(v.student, 'الرقم الجامعي', 20);
     requireValue(/^\d{4,20}$/.test(student), 'أدخل الرقم الجامعي بالأرقام');
-    requireValue(!list('member').some(m => m.student === student), 'يوجد طلب سابق لهذا الرقم الجامعي', 409);
+    requireValue(!(await list('member')).some(m => m.student === student), 'يوجد طلب سابق لهذا الرقم الجامعي', 409);
     const level = number(v.level, 'المستوى الدراسي', 1, 12);
     requireValue(Number.isInteger(level), 'اختر مستوى دراسيًا صالحًا');
-    requireValue(typeof v.committee === 'string' && get('committee', v.committee), 'اختر لجنة من القائمة');
+    requireValue(typeof v.committee === 'string' && await get('committee', v.committee), 'اختر لجنة من القائمة');
     const password = str(v.password, 'كلمة المرور', 200);
     requireValue(password.length >= 8, 'كلمة المرور تحتاج إلى 8 أحرف على الأقل');
     const phone = str(v.phone, 'رقم الجوال', 30);
     requireValue(/^\+?[0-9 ()-]{8,22}$/.test(phone), 'أدخل رقم جوال صالحًا');
     const salt = randomBytes(16).toString('hex');
-    save('member', { name: fullName(v.name), student, email: student + '@nu.edu.sa', phone,
+    await save('member', { name: fullName(v.name), student, email: student + '@nu.edu.sa', phone,
       major: str(v.major, 'التخصص'), level, skills: str(v.skills, 'المهارات', 2000), committee: v.committee,
       hash: secretHash(password, salt).toString('hex'), salt, status: 'pending' });
     return ok();
   }
   if (path === '/api/register') {
-    const event = typeof v.event === 'string' && get('event', v.event);
+    const event = typeof v.event === 'string' && await get('event', v.event);
     requireValue(event?.open, 'التسجيل مغلق', 409);
     const member = who.member?.status === 'accepted' ? who.member : null;
     const address = member?.email || email(v.email);
-    requireValue(!list('registration').some(r => r.event === event.id && r.email === address), 'هذا البريد مسجل مسبقًا في الفعالية', 409);
+    requireValue(!(await list('registration')).some(r => r.event === event.id && r.email === address), 'هذا البريد مسجل مسبقًا في الفعالية', 409);
     const answers = member ? [] : event.fields.map((field, i) => {
       const answer = str(v.answers?.[i], field.label, 2000, !field.required);
       requireValue(!answer || field.type !== 'select' || field.options.includes(answer), 'اختر قيمة صالحة');
       return { label: field.label, answer };
     });
-    const record = save('registration', { event: event.id, member: member?.id || null, name: member?.name || fullName(v.name), email: address, answers, attendance: null });
+    const record = await save('registration', { event: event.id, member: member?.id || null, name: member?.name || fullName(v.name), email: address, answers, attendance: null });
     return ok({ code: record.id });
   }
   if (path === '/api/contact') {
-    save('message', { name: fullName(v.name), email: email(v.email), text: str(v.text, 'نص الرسالة', 6000), date: new Date().toISOString() });
+    await save('message', { name: fullName(v.name), email: email(v.email), text: str(v.text, 'نص الرسالة', 6000), date: new Date().toISOString() });
     return ok();
   }
   if (path === '/api/certificate') {
     const code = str(v.code, 'رمز التسجيل', 60);
-    const registration = get('registration', code);
-    const result = registration?.email === email(v.email) && certificate(registration);
+    const registration = await get('registration', code);
+    const result = registration?.email === email(v.email) && await certificate(registration);
     requireValue(result, 'لا توجد شهادة متاحة بهذه البيانات', 404);
     return ok(result);
   }
   if (path === '/api/admin/member') {
     requireValue(who.admin, 'سجّل دخول الإدارة', 403);
-    const item = get('member', str(v.id, 'المعرّف', 60));
+    const item = await get('member', str(v.id, 'المعرّف', 60));
     requireValue(item && ['accepted','rejected','pending'].includes(v.status), 'الطلب غير صالح');
-    save('member', { ...item, status: v.status }, item.id);
+    await save('member', { ...item, status: v.status }, item.id);
     return ok();
   }
   if (path === '/api/admin/attendance') {
     requireValue(who.admin, 'سجّل دخول الإدارة', 403);
-    const item = get('registration', str(v.id, 'المعرّف', 60));
+    const item = await get('registration', str(v.id, 'المعرّف', 60));
     requireValue(item, 'التسجيل غير موجود', 404);
-    save('registration', { ...item, attendance: number(v.attendance, 'نسبة الحضور', 0, 100) }, item.id);
+    await save('registration', { ...item, attendance: number(v.attendance, 'نسبة الحضور', 0, 100) }, item.id);
     return ok();
   }
   if (path === '/api/admin/content') {
     requireValue(who.admin, 'سجّل دخول الإدارة', 403);
     requireValue(kinds.includes(v.kind), 'نوع المحتوى غير صالح');
-    const previous = v.id ? get(v.kind, str(v.id, 'المعرّف', 60)) : null;
+    const previous = v.id ? await get(v.kind, str(v.id, 'المعرّف', 60)) : null;
     requireValue(!v.id || previous, 'العنصر غير موجود', 404);
-    save(v.kind, content(v.kind, v, previous), previous?.id);
+    await save(v.kind, content(v.kind, v, previous), previous?.id);
     return ok();
   }
   throw new RequestError('المسار غير موجود', 404);
@@ -280,7 +271,14 @@ createServer(async (req, res) => {
     }
     response(req, res, 404, { error:'الصفحة غير موجودة' });
   } catch (e) {
-    if (!(e instanceof RequestError)) console.error(e);
+    const duplicate = {
+      unique_student: 'يوجد طلب سابق لهذا الرقم الجامعي',
+      unique_registration: 'هذا البريد مسجل مسبقًا في الفعالية'
+    };
+    const conflict = e.code === '23505' ? duplicate[e.constraint]
+      : e.errcode === 2067 ? Object.entries(duplicate).find(([name]) => e.message.includes(name))?.[1] : null;
+    if (conflict && !res.headersSent) return response(req, res, 409, { error: conflict });
+    if (!(e instanceof RequestError)) console.error('ASME request failed:', e.code || e.name);
     if (!res.headersSent) response(req, res, e.status || 500, { error:e.status ? e.message : 'تعذر إكمال الطلب' });
   }
 }).listen(Number(process.env.PORT || 3000), '0.0.0.0', () => console.log('ASME ready on port ' + (process.env.PORT || 3000)));
