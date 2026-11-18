@@ -1,14 +1,10 @@
 import { createServer } from 'node:http';
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { writeSync } from 'node:fs';
-import { access, readFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join, extname } from 'node:path';
 import { openStorage } from './storage.mjs';
 
-const fonts = (await Promise.all(['Regular','Bold'].map(async weight => {
-  const file = 'thmanyahserifdisplay-' + weight + '.otf';
-  try { await access(join('public/assets', file)); return file; } catch { return null; }
-}))).filter(Boolean);
 const adminSecret = process.env.ASME_ADMIN_PASSWORD || '';
 const kinds = ['committee','event','article','achievement','banner'];
 const maxAge = 60 * 60 * 8;
@@ -45,7 +41,7 @@ try {
   startupFailure(code + ' — ' + hint);
 }
 const { list, get, save, removeSession } = storage;
-const mime = { '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.otf':'font/otf' };
+const mime = { '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.woff2':'font/woff2' };
 class RequestError extends Error {
   constructor(message, status = 400) { super(message); this.status = status; }
 }
@@ -121,7 +117,7 @@ async function publicContent(includeTemplates = false) {
   const entries = await Promise.all(kinds.map(async kind => [kind, await list(kind)]));
   const result = Object.fromEntries(entries);
   if (!includeTemplates) result.event = result.event.map(({ template, ...event }) => event);
-  return { ...result, fonts, email: process.env.ASME_CONTACT_EMAIL || '' };
+  return { ...result, email: process.env.ASME_CONTACT_EMAIL || '' };
 }
 async function certificate(registration) {
   const event = await get('event', registration.event);

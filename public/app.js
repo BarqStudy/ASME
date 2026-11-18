@@ -73,11 +73,18 @@ function setList(selector, items, render, message) {
 }
 
 const icons = {
+  menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+  close: '<path d="m6 6 12 12M18 6 6 18"/>',
+  user: '<circle cx="12" cy="8" r="3"/><path d="M5 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/>',
+  left: '<path d="M19 12H5m6 6-6-6 6-6"/>',
+  'up-left': '<path d="M17 17 7 7m0 8V7h8"/>',
+  tree: '<rect x="9" y="2" width="6" height="5"/><path d="M12 7v6m-7 4v-4h14v4"/><rect x="2" y="17" width="6" height="5"/><rect x="16" y="17" width="6" height="5"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
   eye: '<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="2.5"/>',
   target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="2"/>'
 };
 document.querySelectorAll('[data-icon]').forEach(node => {
-  node.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" aria-hidden="true">' + icons[node.dataset.icon] + '</svg>';
+  node.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + icons[node.dataset.icon] + '</svg>';
 });
 const originalTitle = $('#hero-title').innerHTML;
 const originalDescription = $('#hero-description').textContent;
@@ -90,11 +97,11 @@ function renderBanner() {
   if (banner) $('#hero-title').textContent = banner.title;
   else $('#hero-title').innerHTML = originalTitle;
   $('#hero-description').textContent = banner?.text || originalDescription;
-  $('#banner-nav').replaceChildren(...[null, ...site.banner].map((item, index) => {
+  $('#banner-nav').replaceChildren(...(site.banner.length ? [null, ...site.banner] : []).map((item, index) => {
     const dot = el('button', { 'aria-label': item?.title || 'البنر الرئيسي', 'aria-current': String(index === bannerIndex) });
     dot.onclick = () => { bannerIndex = index; renderBanner(); };
     return dot;
-  }).filter((_item, _index, all) => all.length > 1));
+  }));
 }
 function story(item, action) {
   return el('article', { class: 'card' },
@@ -105,13 +112,6 @@ function story(item, action) {
 }
 async function refresh() {
   site = await api('content');
-  for (const file of site.fonts || []) {
-    const weight = file.includes('Bold') ? '700 900' : '400';
-    if ([...document.fonts].some(font => font.family === 'Thmanyah' && font.weight === weight)) continue;
-    const font = new FontFace('Thmanyah', 'url(/assets/' + file + ')', { weight, display:'swap' });
-    document.fonts.add(font);
-    font.load().catch(() => document.fonts.delete(font));
-  }
   renderBanner();
   setList('#events', site.event, event => el('article', { class: 'card' },
     el('span', { class: 'tag' }, event.type), el('h3', {}, event.title),
@@ -127,7 +127,7 @@ async function refresh() {
 }
 function setAccount(who) {
   account = who;
-  $('#account').textContent = who.member ? 'حسابي' : who.admin ? 'لوحة الإدارة' : 'تسجيل الدخول';
+  $('[data-account-label]').textContent = who.member ? 'حسابي' : who.admin ? 'لوحة الإدارة' : 'تسجيل الدخول';
 }
 function login(role = 'member', next) {
   const admin = role === 'admin';
@@ -201,7 +201,7 @@ function certificateView(template, name) {
   const text = item.lastElementChild;
   Object.assign(text.style, {
     left:template.x + '%', top:template.y + '%', color:template.color,
-    fontFamily:template.font + ', Tahoma, Arial, sans-serif', fontSize:template.size + 'cqw'
+    fontFamily:template.font === 'Thmanyah' ? 'var(--display)' : 'Tahoma, Arial, sans-serif', fontSize:template.size + 'cqw'
   });
   return item;
 }
