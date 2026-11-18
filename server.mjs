@@ -1,5 +1,6 @@
 import { createServer } from 'node:http';
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import { writeSync } from 'node:fs';
 import { access, readFile } from 'node:fs/promises';
 import { join, extname } from 'node:path';
 import { openStorage } from './storage.mjs';
@@ -8,22 +9,42 @@ const fonts = (await Promise.all(['Regular','Bold'].map(async weight => {
   const file = 'thmanyahserifdisplay-' + weight + '.otf';
   try { await access(join('public/assets', file)); return file; } catch { return null; }
 }))).filter(Boolean);
+const adminSecret = process.env.ASME_ADMIN_PASSWORD || '';
+const kinds = ['committee','event','article','achievement','banner'];
+const maxAge = 60 * 60 * 8;
+
+function startupFailure(message) {
+  writeSync(2, 'ASME startup failed: ' + message + '\n');
+  process.exit(1);
+}
+if (adminSecret && adminSecret.length < 12) {
+  startupFailure('ASME_ADMIN_PASSWORD must contain at least 12 characters');
+}
+
 let storage;
 try {
   storage = await openStorage();
+  for (const [id, name] of Object.entries({ admin: 'اللجنة الإدارية', media: 'لجنة الإعلام والتسويق', quality: 'لجنة التطوير والجودة', social: 'اللجنة الاجتماعية' })) {
+    await storage.seed('committee', id, { name });
+  }
+  await storage.pruneSessions(Date.now());
 } catch (error) {
-  console.error('Unable to initialize ASME storage:', error.code || error.name);
-  process.exit(1);
+  const code = /^[A-Z0-9_]{2,64}$/.test(error.code ?? '') ? error.code : 'UNKNOWN';
+  const hints = {
+    ERR_INVALID_URL: 'check that DATABASE_URL contains the complete PostgreSQL URI with URL-encoded credentials',
+    '28P01': 'PostgreSQL rejected the credentials. Check the Session pooler username and the database password',
+    28000: 'PostgreSQL rejected the connection authorization. Check the Session pooler settings',
+    42501: 'the PostgreSQL account lacks permission to initialize ASME tables',
+    ENOTFOUND: 'the database hostname could not be resolved. Copy the Session pooler URI again',
+    ECONNREFUSED: 'the database refused the connection. Check that the project is active and the port is correct',
+    DEPTH_ZERO_SELF_SIGNED_CERT: 'the database TLS certificate could not be verified'
+  };
+  const hint = /tenant or user not found/i.test(error.message)
+    ? 'Supabase pooler could not find the project or user. Copy the Session pooler URI for this project again'
+    : hints[code] || 'unable to initialize storage';
+  startupFailure(code + ' — ' + hint);
 }
-const { list, get, save, seed, removeSession, pruneSessions } = storage;
-for (const [id, name] of Object.entries({ admin: 'اللجنة الإدارية', media: 'لجنة الإعلام والتسويق', quality: 'لجنة التطوير والجودة', social: 'اللجنة الاجتماعية' })) {
-  await seed('committee', id, { name });
-}
-const kinds = ['committee','event','article','achievement','banner'];
-const adminSecret = process.env.ASME_ADMIN_PASSWORD || '';
-if (adminSecret && adminSecret.length < 12) throw new Error('ASME_ADMIN_PASSWORD must contain at least 12 characters');
-const maxAge = 60 * 60 * 8;
-await pruneSessions(Date.now());
+const { list, get, save, removeSession } = storage;
 const mime = { '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.otf':'font/otf' };
 class RequestError extends Error {
   constructor(message, status = 400) { super(message); this.status = status; }

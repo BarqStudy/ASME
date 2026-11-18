@@ -5,8 +5,14 @@ import { join } from 'node:path';
 export async function openPostgres(connectionString) {
   const { Pool } = await import('pg');
   const url = new URL(connectionString);
-  if (!['postgres:', 'postgresql:'].includes(url.protocol)) {
-    throw new Error('DATABASE_URL must use the PostgreSQL protocol');
+  if (!['postgres:', 'postgresql:'].includes(url.protocol) || !url.hostname || !url.username || url.hash) {
+    throw Object.assign(new Error('Invalid PostgreSQL URI'), { code: 'ERR_INVALID_URL' });
+  }
+  try {
+    decodeURIComponent(url.username);
+    decodeURIComponent(url.password);
+  } catch {
+    throw Object.assign(new Error('Invalid PostgreSQL URI credentials'), { code: 'ERR_INVALID_URL' });
   }
   for (const key of ['sslmode', 'sslcert', 'sslkey', 'sslrootcert', 'ssl']) {
     url.searchParams.delete(key);
