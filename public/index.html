@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#091a2d"><title>نادي الهندسة الميكانيكية | جامعة نجران</title><link rel="stylesheet" href="/style.css"><script type="module" src="/gear.js"></script><script type="module" src="/app.js"></script></head>
+<body>
+<div id="intro" aria-hidden="true"><canvas width="200" height="200"></canvas></div>
+<header><div class="wrap nav"><a class="brand" href="#" aria-label="الرئيسية"><img src="/assets/logo.webp" alt="ASME"><span><b>نادي الهندسة الميكانيكية</b><small>جامعة نجران</small></span></a><button id="menu" class="icon-btn" aria-label="القائمة" aria-expanded="false">☰</button><nav id="nav"><a class="active" href="#">الرئيسية</a><a href="#about">عن النادي</a><a href="#programs">الدورات والمعسكرات</a><a href="#news">الأخبار</a><a href="#contact">تواصل معنا</a></nav><button class="btn outline" data-action="account" id="account">تسجيل الدخول</button></div></header>
+<main class="wrap">
+<section class="hero" aria-label="نادي الهندسة الميكانيكية">
+<div id="banner-image"></div>
+<div class="hero-content"><div class="hero-kicker"><i></i> الفرع الطلابي لـ ASME · جامعة نجران</div><h1 id="hero-title">هندسةٌ تُصنع<br><em>بأيدي طلابها.</em></h1><p id="hero-description">مجتمع طلابي يجمع شغف الهندسة الميكانيكية بالتجربة والعمل، ويحوّل المعرفة إلى مهارات ومشاريع.</p><div class="hero-actions"><button class="btn primary" data-action="join">انضم إلى النادي <span>↖</span></button><a class="btn glass" href="#programs">استكشف الفعاليات <span>←</span></a></div></div>
+<div class="hero-foot"><span>ASME / NAJRAN UNIVERSITY</span><div id="banner-nav"></div></div>
+</section>
+<section id="about" class="section"><div class="heading centered"><span class="eyebrow">عن النادي</span><h2>رؤيتنا ورسالتنا</h2><p>فرع طلابي للجمعية الأمريكية للمهندسين الميكانيكيين في جامعة نجران.</p></div><div class="pair"><article class="purpose"><div class="purpose-icon" data-icon="eye"></div><div><h3>رؤيتنا</h3><p>أن نكون مجتمعًا طلابيًا رائدًا في الهندسة الميكانيكية، يطوّر مهارات أعضائه ويمنحهم مساحة للابتكار والتجربة.</p></div></article><article class="purpose"><div class="purpose-icon" data-icon="target"></div><div><h3>رسالتنا</h3><p>ربط المعرفة الأكاديمية بالتطبيق العملي من خلال التدريب والمشاريع والعمل الجماعي، والإسهام في خدمة المجتمع.</p></div></article></div></section>
+<section id="programs" class="section separated"><div class="heading"><span class="eyebrow">تعلّم بالتجربة</span><h2>الدورات والمعسكرات</h2><p>طوّر مهاراتك الهندسية عبر فعاليات النادي.</p></div><div class="grid" id="events"></div></section>
+<section id="news" class="section separated"><div class="heading"><span class="eyebrow">مستجدات النادي</span><h2>أخبار النادي</h2></div><div class="grid" id="articles"></div></section>
+<section id="achievements" class="section separated"><div class="heading"><span class="eyebrow">أثر النادي</span><h2>إنجازات النادي</h2></div><div class="grid" id="achievements-list"></div></section>
+<section id="structure" class="section separated"><div class="heading centered"><span class="eyebrow">فريق العمل</span><h2>هيكلة النادي</h2></div><div class="tree"><div class="tree-root">إدارة نادي ASME</div><div id="committees" class="tree-branches"></div></div></section>
+<section id="contact" class="section"><div class="contact"><div><h2>تواصل معنا</h2><p>للاستفسارات والمقترحات وفرص التعاون مع النادي.</p></div><div class="hero-actions"><button class="btn primary" data-action="contact">أرسل رسالة ↖</button><a class="btn glass" id="club-email" hidden>البريد الإلكتروني</a></div></div></section>
+</main>
+<footer><div class="wrap footer"><span>نادي الهندسة الميكانيكية · جامعة نجران</span><div><button data-action="certificates">الشهادات الإلكترونية</button><button data-action="admin">لوحة الإدارة</button></div></div></footer>
+<dialog id="dialog"><div class="dialog-top"><h2 id="dialog-title"></h2><button class="icon-btn" data-action="close" aria-label="إغلاق">×</button></div><div id="dialog-content"></div></dialog>
+<div id="toast" role="status"></div>
+</body></html>
